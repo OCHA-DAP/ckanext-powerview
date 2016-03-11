@@ -8,41 +8,19 @@
 .. image:: https://coveralls.io/repos/OCHA-DAP/ckanext-powerviews/badge.svg
   :target: https://coveralls.io/r/OCHA-DAP/ckanext-powerviews
 
-.. image:: https://pypip.in/download/ckanext-powerviews/badge.svg
-    :target: https://pypi.python.org/pypi//ckanext-powerviews/
-    :alt: Downloads
 
-.. image:: https://pypip.in/version/ckanext-powerviews/badge.svg
-    :target: https://pypi.python.org/pypi/ckanext-powerviews/
-    :alt: Latest Version
-
-.. image:: https://pypip.in/py_versions/ckanext-powerviews/badge.svg
-    :target: https://pypi.python.org/pypi/ckanext-powerviews/
-    :alt: Supported Python versions
-
-.. image:: https://pypip.in/status/ckanext-powerviews/badge.svg
-    :target: https://pypi.python.org/pypi/ckanext-powerviews/
-    :alt: Development Status
-
-.. image:: https://pypip.in/license/ckanext-powerviews/badge.svg
-    :target: https://pypi.python.org/pypi/ckanext-powerviews/
-    :alt: License
-
-=============
+==================
 ckanext-powerviews
-=============
+==================
 
-.. Put a description of your extension here:
-   What does it do? What features does it have?
-   Consider including some screenshots or embedding a video!
+Data source and configuration to power a view for one or more resources.
 
 
 ------------
 Requirements
 ------------
 
-For example, you might want to mention here which versions of CKAN this
-extension works with.
+Requires CKAN 2.3+
 
 
 ------------
@@ -63,11 +41,15 @@ To install ckanext-powerviews:
 
      pip install ckanext-powerviews
 
-3. Add ``powerviews`` to the ``ckan.plugins`` setting in your CKAN
+3. Create the database tables::
+
+     paster --plugin=ckanext-powerviews powerviews init --config=production.ini
+
+4. Add ``powerviews`` to the ``ckan.plugins`` setting in your CKAN
    config file (by default the config file is located at
    ``/etc/ckan/default/production.ini``).
 
-4. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
+5. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
 
      sudo service apache2 reload
 
@@ -110,9 +92,9 @@ coverage installed in your virtualenv (``pip install coverage``) then run::
     nosetests --nologcapture --with-pylons=test.ini --with-coverage --cover-package=ckanext.powerviews --cover-inclusive --cover-erase --cover-tests
 
 
----------------------------------
+--------------------------------------
 Registering ckanext-powerviews on PyPI
----------------------------------
+--------------------------------------
 
 ckanext-powerviews should be availabe on PyPI as
 https://pypi.python.org/pypi/ckanext-powerviews. If that link doesn't work, then
@@ -139,9 +121,9 @@ steps:
        git push --tags
 
 
-----------------------------------------
+---------------------------------------------
 Releasing a New Version of ckanext-powerviews
-----------------------------------------
+---------------------------------------------
 
 ckanext-powerviews is availabe on PyPI as https://pypi.python.org/pypi/ckanext-powerviews.
 To publish a new version to PyPI follow these steps:

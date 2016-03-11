@@ -78,10 +78,14 @@ setup(
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points='''
+        [paste.paster_command]
+        powerviews = ckanext.powerviews.commands:Powerview
+
         [ckan.plugins]
         powerviews=ckanext.powerviews.plugin:PowerviewsPlugin
-    	[babel.extractors]
-    	ckan = ckan.lib.extract:extract_ckan
+
+        [babel.extractors]
+        ckan = ckan.lib.extract:extract_ckan
     ''',
 
     # If you are changing from the default layout of your extension, you may
