@@ -26,5 +26,5 @@ class Powerview(CkanCommand):
         self.log = logging.getLogger(__name__)
 
         if cmd == 'init':
-            from ckanext.powerviews.model import init_tables
+            from ckanext.powerview.model import init_tables
             init_tables()

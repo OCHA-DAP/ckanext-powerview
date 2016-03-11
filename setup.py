@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='''ckanext-powerviews''',
+    name='''ckanext-powerview''',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -21,7 +21,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/OCHA-DAP/ckanext-powerviews',
+    url='https://github.com/OCHA-DAP/ckanext-powerview',
 
     # Author details
     author='''Brook Elgie''',
@@ -79,10 +79,10 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points='''
         [paste.paster_command]
-        powerviews = ckanext.powerviews.commands:Powerview
+        powerview = ckanext.powerview.commands:Powerview
 
         [ckan.plugins]
-        powerviews=ckanext.powerviews.plugin:PowerviewsPlugin
+        powerview=ckanext.powerview.plugin:PowerviewPlugin
 
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
