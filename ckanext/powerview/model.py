@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import types, Table, Column, ForeignKey
 
 from ckan.model import meta, domain_object
@@ -46,7 +48,12 @@ powerview_table = Table(
     Column('title', types.UnicodeText, nullable=True),
     Column('description', types.UnicodeText, nullable=True),
     Column('view_type', types.UnicodeText, nullable=False),
-    Column('config', ckan_types.JsonDictType)
+    Column('config', ckan_types.JsonDictType),
+    Column('created', types.DateTime, default=datetime.datetime.utcnow),
+    Column('last_modified', types.DateTime),
+    Column('owner_org', types.UnicodeText),
+    Column('created_by', types.UnicodeText),
+    Column('private', types.Boolean, default=False),
 )
 
 meta.mapper(PowerView, powerview_table)
