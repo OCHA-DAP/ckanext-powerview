@@ -39,7 +39,14 @@ meta.mapper(PowerviewResourceAssociation, powerview_resource_association_table)
 
 
 class PowerView(domain_object.DomainObject):
-    pass
+    @classmethod
+    def filter(cls, **kwargs):
+        return meta.Session.query(cls).filter_by(**kwargs)
+
+    @classmethod
+    def get(cls, **kwargs):
+        instance = cls.filter(**kwargs).first()
+        return instance
 
 powerview_table = Table(
     'powerview', meta.metadata,

@@ -141,6 +141,7 @@ class TestUpdatePowerView(TestBase):
     '''Test schema validation for powerview update.'''
 
     def _make_powerview(self, user):
+        '''Make a powerview and return the resulting data_dict.'''
         data_dict = {
             'title': 'Title',
             'description': 'My short description.',
@@ -154,10 +155,51 @@ class TestUpdatePowerView(TestBase):
             data_dict=data_dict
         )
 
-    def test_powerview_update_title(self):
-        '''Providing title doesn't raise ValidationError.'''
+    def test_powerview_update_valid_dict(self):
+        '''Updating with valid data_dict passes schema validation with no
+        errors raised.'''
+        sysadmin = Sysadmin()
+
+        powerview_dict_create = self._make_powerview(sysadmin)
+
+        # update with the same data_dict as returned by create
+        toolkit.get_action('powerview_update')(
+            context={'user': sysadmin['name']},
+            data_dict=powerview_dict_create.copy()
+        )
+
+    def test_powerview_update_no_id(self):
+        '''Updating with a missing powerview id raises error.'''
+
         sysadmin = Sysadmin()
 
         powerview_dict = self._make_powerview(sysadmin)
+        del powerview_dict['id']
 
-        print(powerview_dict)
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_update')(
+                context={'user': sysadmin['name']},
+                data_dict=powerview_dict
+            )
+        error_dict = cm.exception.error_dict['id']
+        nosetools.assert_true("Missing value"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_update_nonexisting_id(self):
+        '''Updating with a non-existing powerview id raises error.'''
+
+        sysadmin = Sysadmin()
+
+        powerview_dict = self._make_powerview(sysadmin)
+        powerview_dict['id'] = 'non-existing-id'
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_update')(
+                context={'user': sysadmin['name']},
+                data_dict=powerview_dict
+            )
+        error_dict = cm.exception.error_dict['id']
+        nosetools.assert_true("Not found: PowerView"
+                              in error_dict,
+                              "Expected string not in exception message.")

@@ -10,6 +10,7 @@ boolean_validator = toolkit.get_validator('boolean_validator')
 empty = toolkit.get_validator('empty')
 not_empty = toolkit.get_validator('not_empty')
 convert_to_json_if_string = toolkit.get_converter('convert_to_json_if_string')
+powerview_id_exists = toolkit.get_validator('powerview_id_exists')
 
 
 def powerview_base_schema():
@@ -28,4 +29,19 @@ def powerview_create_schema():
     schema.update({
         'id': [empty]
     })
+    return schema
+
+
+def powerview_update_schema():
+    schema = powerview_base_schema()
+    schema.update({
+        'id': [not_empty, unicode, powerview_id_exists]
+    })
+    return schema
+
+
+def powerview_show_schema():
+    schema = {
+        'id': [not_empty, unicode, powerview_id_exists]
+    }
     return schema

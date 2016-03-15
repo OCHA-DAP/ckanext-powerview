@@ -2,6 +2,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 
 import ckanext.powerview.logic.auth
+import ckanext.powerview.logic.validators
 
 import logging
 log = logging.getLogger(__name__)
@@ -11,6 +12,7 @@ class PowerviewPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IAuthFunctions)
     plugins.implements(plugins.IActions)
+    plugins.implements(plugins.IValidators)
 
     # IConfigurer
 
@@ -36,7 +38,7 @@ class PowerviewPlugin(plugins.SingletonPlugin):
     def get_actions(self):
         module_root = 'ckanext.powerview.logic.action'
         logic_functions = {}
-        for module_name in ['create']:
+        for module_name in ['create', 'update']:
             module_path = '%s.%s' % (module_root, module_name,)
 
             module = __import__(module_path)
@@ -51,3 +53,11 @@ class PowerviewPlugin(plugins.SingletonPlugin):
                     logic_functions[key] = value
 
         return logic_functions
+
+    # IValidators
+
+    def get_validators(self):
+        return {
+            'powerview_id_exists':
+                ckanext.powerview.logic.validators.powerview_id_exists
+        }
