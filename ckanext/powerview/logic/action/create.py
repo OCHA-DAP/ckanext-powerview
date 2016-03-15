@@ -1,7 +1,9 @@
+import ckan.model as model
 from ckan.logic import validate
 from ckan.plugins import toolkit
 
 from ckanext.powerview.logic import schema
+from ckanext.powerview.model import PowerView
 
 import logging
 log = logging.getLogger(__name__)
@@ -15,3 +17,15 @@ def powerview_create(context, data_dict):
 
     '''
     toolkit.check_access('ckanext_powerview_create', context, data_dict)
+
+    user = context['user']
+    user_obj = model.User.get(user)
+    data_dict['created_by'] = user_obj.id
+
+    powerview = PowerView(**data_dict)
+
+    session = context['session']
+    session.add(powerview)
+    session.commit()
+
+    return powerview.as_dict()

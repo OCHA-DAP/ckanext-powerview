@@ -3,13 +3,15 @@ from nose import tools as nosetools
 import ckan.plugins.toolkit as toolkit
 
 from ckantoolkit.tests.factories import Sysadmin
-from ckantoolkit.tests.helpers import FunctionalTestBase
+
 from ckantoolkit import ValidationError
 
+from ckanext.powerview.tests import TestBase
 
-class TestCreatePowerView(FunctionalTestBase):
 
-    '''Test schema validation for powerviews.'''
+class TestCreatePowerView(TestBase):
+
+    '''Test schema validation for powerview_create.'''
 
     def _make_create_data_dict(self):
         data_dict = {
@@ -132,3 +134,30 @@ class TestCreatePowerView(FunctionalTestBase):
         nosetools.assert_true("The input field id was not expected."
                               in error_dict,
                               "Expected string not in exception message.")
+
+
+class TestUpdatePowerView(TestBase):
+
+    '''Test schema validation for powerview update.'''
+
+    def _make_powerview(self, user):
+        data_dict = {
+            'title': 'Title',
+            'description': 'My short description.',
+            'view_type': 'my-view-type',
+            'config': '{"my":"json"}',
+            'private': 'yes'
+        }
+
+        return toolkit.get_action('powerview_create')(
+            context={'user': user['name']},
+            data_dict=data_dict
+        )
+
+    def test_powerview_update_title(self):
+        '''Providing title doesn't raise ValidationError.'''
+        sysadmin = Sysadmin()
+
+        powerview_dict = self._make_powerview(sysadmin)
+
+        print(powerview_dict)
