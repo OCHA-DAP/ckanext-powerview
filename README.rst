@@ -82,6 +82,27 @@ do::
     pip install -r dev-requirements.txt
 
 
+---
+API
+---
+
+All actions in the PowerView extension are available in the CKAN Action API.
+
+PowerView actions::
+
+    - create a new powerview (sysadmins only)
+    curl -X POST http://127.0.0.1:5000/api/3/action/ckanext_powerview_create -H "Authorization:{YOUR-API-KEY}" -d '{"title": "My New View", "view_type": "my-view-type"}'
+
+    - update an existing powerview (sysadmins only)
+    curl -X POST http://127.0.0.1:5000/api/3/action/ckanext_powerview_update -H "Authorization:{YOUR-API-KEY}" -d '{"id":"my-powerview-id", "title": "My Updated Title", "view_type": "my-view-type"}'
+
+    - delete a powerview (sysadmins only)
+    curl -X POST http://127.0.0.1:5000/api/3/action/ckanext_powerview_delete -H "Authorization:{YOUR-API-KEY}" -d '{"id": "my-powerview-id"}'
+
+    - show a powerview
+    curl -X POST http://127.0.0.1:5000/api/3/action/ckanext_powerview_show -d '{"id": "my-powerview-id"}'
+
+
 -----------------
 Running the Tests
 -----------------

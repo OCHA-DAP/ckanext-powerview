@@ -15,6 +15,22 @@ def powerview_create(context, data_dict):
 
     You must provide your API key in the Authorization header.
 
+    :param title: title of the powerview
+    :type title: string
+    :param description: a description for the powerview (optional)
+    :type description: string
+    :param view_type: type of view
+    :type view_type: string
+    :param resources: resource ids available for this view (optional)
+    :type resources: list
+    :param config: options necessary to recreate a view state (optional)
+    :type config: JSON string
+    :param owner_org: id of the owning organization (optional)
+    :type owner_org: string
+    :param private: determines if view is publicly accessible (optional,
+        defaults to False)
+    :type private: boolean
+
     '''
     toolkit.check_access('ckanext_powerview_create', context, data_dict)
 

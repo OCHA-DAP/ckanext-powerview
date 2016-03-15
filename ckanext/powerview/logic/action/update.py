@@ -16,6 +16,21 @@ def powerview_update(context, data_dict):
 
     You must provide your API key in the Authorization header.
 
+    :param title: title of the powerview
+    :type title: string
+    :param description: a description for the powerview
+    :type description: string
+    :param view_type: type of view
+    :type view_type: string
+    :param resources: resource ids available for this view
+    :type resources: list
+    :param config: options necessary to recreate a view state
+    :type config: JSON string
+    :param owner_org: id of the owning organization
+    :type owner_org: string
+    :param private: determines if view is publicly accessible
+    :type private: boolean
+
     '''
 
     toolkit.check_access('ckanext_powerview_update', context, data_dict)
