@@ -1,10 +1,7 @@
 from ckan.plugins import toolkit
 
-not_missing = toolkit.get_validator('not_missing')
 ignore_missing = toolkit.get_validator('ignore_missing')
-package_exists = toolkit.get_validator('package_id_or_name_exists')
 resource_id_exists = toolkit.get_validator('resource_id_exists')
-user_exists = toolkit.get_validator('user_id_or_name_exists')
 organization_exists = toolkit.get_validator('group_id_or_name_exists')
 boolean_validator = toolkit.get_validator('boolean_validator')
 empty = toolkit.get_validator('empty')
@@ -41,6 +38,13 @@ def powerview_update_schema():
 
 
 def powerview_show_schema():
+    schema = {
+        'id': [not_empty, unicode, powerview_id_exists]
+    }
+    return schema
+
+
+def powerview_delete_schema():
     schema = {
         'id': [not_empty, unicode, powerview_id_exists]
     }

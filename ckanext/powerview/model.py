@@ -48,6 +48,10 @@ class PowerView(domain_object.DomainObject):
         instance = cls.filter(**kwargs).first()
         return instance
 
+    @classmethod
+    def count(cls):
+        return meta.Session.query(cls).count()
+
 powerview_table = Table(
     'powerview', meta.metadata,
     Column('id', types.UnicodeText, primary_key=True,

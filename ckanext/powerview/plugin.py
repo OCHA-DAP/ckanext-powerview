@@ -38,7 +38,7 @@ class PowerviewPlugin(plugins.SingletonPlugin):
     def get_actions(self):
         module_root = 'ckanext.powerview.logic.action'
         logic_functions = {}
-        for module_name in ['create', 'update', 'get']:
+        for module_name in ['create', 'update', 'get', 'delete']:
             module_path = '%s.%s' % (module_root, module_name,)
 
             module = __import__(module_path)
