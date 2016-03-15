@@ -25,19 +25,14 @@ class TestShowPowerView(TestBase):
         )
 
     def test_powerview_show(self):
-        '''Calling powerview show with valid data_dict.'''
+        '''Calling powerview show with valid id.'''
         sysadmin = Sysadmin()
 
         powerview_dict_create = self._make_powerview(sysadmin)
 
         powerview_dict_show = toolkit.get_action('powerview_show')(
             context={'user': sysadmin['name']},
-            data_dict=powerview_dict_create.copy()
+            data_dict={'id': powerview_dict_create['id']}
         )
-
-        # last_modified has changed
-        nosetools.assert_true(powerview_dict_create['last_modified'] is None)
-        # last_modified still none (not been updated)
-        nosetools.assert_true(powerview_dict_show['last_modified'] is None)
 
         nosetools.assert_equal(powerview_dict_create, powerview_dict_show)
