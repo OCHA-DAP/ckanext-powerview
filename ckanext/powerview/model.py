@@ -48,7 +48,18 @@ class PowerviewBaseModel(domain_object.DomainObject):
 
 
 class PowerviewResourceAssociation(PowerviewBaseModel):
-    pass
+
+    @classmethod
+    def get_resource_ids_for_powerview(cls, powerview_id):
+        '''
+        Return a list of resource ids associated with the passed powerview_id.
+        '''
+        associated_resource_id_list = \
+            meta.Session.query(cls.resource_id).filter_by(
+                powerview_id=powerview_id).all()
+        associated_resource_id_list = [res[0] for res in
+                                       associated_resource_id_list]
+        return associated_resource_id_list
 
 powerview_resource_association_table = Table(
     'powerview_resource_association', meta.metadata,
@@ -68,7 +79,12 @@ meta.mapper(PowerviewResourceAssociation, powerview_resource_association_table)
 
 
 class PowerView(PowerviewBaseModel):
-    pass
+    def as_dict(self):
+        _dict = domain_object.DomainObject.as_dict(self)
+        _dict['resources'] = \
+            PowerviewResourceAssociation.get_resource_ids_for_powerview(
+                self.id)
+        return _dict
 
 powerview_table = Table(
     'powerview', meta.metadata,

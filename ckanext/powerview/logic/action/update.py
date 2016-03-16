@@ -37,7 +37,7 @@ def powerview_update(context, data_dict):
 
     powerview = PowerView.get(id=data_dict['id'])
 
-    ignored_keys = ['id', 'created', 'last_modified']
+    ignored_keys = ['id', 'created', 'last_modified', 'resources']
 
     for k, v in data_dict.items():
         if k not in ignored_keys:
