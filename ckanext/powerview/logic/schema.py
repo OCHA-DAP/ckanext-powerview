@@ -8,6 +8,7 @@ empty = toolkit.get_validator('empty')
 not_empty = toolkit.get_validator('not_empty')
 convert_to_json_if_string = toolkit.get_converter('convert_to_json_if_string')
 powerview_id_exists = toolkit.get_validator('powerview_id_exists')
+resource_ids_in_list = toolkit.get_validator('resource_ids_in_list')
 
 
 def powerview_base_schema():
@@ -16,7 +17,8 @@ def powerview_base_schema():
         'description': [ignore_missing, unicode],
         'view_type': [not_empty, unicode],
         'config': [ignore_missing, convert_to_json_if_string],
-        'private': [ignore_missing, boolean_validator]
+        'private': [ignore_missing, boolean_validator],
+        'resources': [ignore_missing, resource_ids_in_list]
     }
     return schema
 

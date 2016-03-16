@@ -135,6 +135,54 @@ class TestCreatePowerView(TestBase):
                               in error_dict,
                               "Expected string not in exception message.")
 
+    def test_powerview_create_resource_list_must_be_list(self):
+        '''resources must be a list'''
+        sysadmin = Sysadmin()
+        data_dict = self._make_create_data_dict()
+        # add invalid resource list
+        data_dict['resources'] = "Isn't a list"
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_create')(
+                context={'user': sysadmin['name']},
+                data_dict=data_dict
+            )
+        error_dict = cm.exception.error_dict['resources']
+        nosetools.assert_true("Not a list"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_create_resources_must_be_strings(self):
+        '''Items in resources list must be strings'''
+        sysadmin = Sysadmin()
+        data_dict = self._make_create_data_dict()
+        # add invalid resource list
+        data_dict['resources'] = [1, 'asfd', False]
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_create')(
+                context={'user': sysadmin['name']},
+                data_dict=data_dict
+            )
+        error_dict = cm.exception.error_dict['resources']
+        nosetools.assert_true("Not a string: 1"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_create_resources_ids_must_exist(self):
+        '''Items in resources list must be resource ids that exist.'''
+        sysadmin = Sysadmin()
+        data_dict = self._make_create_data_dict()
+        # add invalid resource list
+        data_dict['resources'] = ['my-nonexisting-id', 'resource-not-here']
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_create')(
+                context={'user': sysadmin['name']},
+                data_dict=data_dict
+            )
+        error_dict = cm.exception.error_dict['resources']
+        nosetools.assert_true("Not found: Resource"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
 
 class TestUpdatePowerView(TestBase):
 

@@ -59,5 +59,7 @@ class PowerviewPlugin(plugins.SingletonPlugin):
     def get_validators(self):
         return {
             'powerview_id_exists':
-                ckanext.powerview.logic.validators.powerview_id_exists
+                ckanext.powerview.logic.validators.powerview_id_exists,
+            'resource_ids_in_list':
+                ckanext.powerview.logic.validators.resource_ids_in_list
         }
