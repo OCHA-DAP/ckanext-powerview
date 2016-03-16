@@ -156,7 +156,7 @@ class TestCreatePowerView(TestBase):
         sysadmin = Sysadmin()
         data_dict = self._make_create_data_dict()
         # add invalid resource list
-        data_dict['resources'] = [1, 'asfd', False]
+        data_dict['resources'] = [1, 'asfd']
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_create')(
                 context={'user': sysadmin['name']},

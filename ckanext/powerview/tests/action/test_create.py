@@ -2,9 +2,10 @@ from nose import tools as nosetools
 
 import ckan.plugins.toolkit as toolkit
 
-from ckantoolkit.tests.factories import Sysadmin
+from ckantoolkit.tests.factories import Sysadmin, Resource
 
 from ckanext.powerview.tests import TestBase
+from ckanext.powerview.model import PowerviewResourceAssociation
 
 
 class TestCreatePowerView(TestBase):
@@ -52,3 +53,39 @@ class TestCreatePowerView(TestBase):
         )
 
         nosetools.assert_false(powerview_result['private'])
+
+    def test_powerview_create_resource_id_list_creates_associations(self):
+        '''If resource id list is provided, associations are create with
+        powerview.'''
+        sysadmin = Sysadmin()
+        r1 = Resource()
+        r2 = Resource()
+        r3 = Resource()
+
+        create_dict = self._make_create_data_dict()
+        create_dict['resources'] = [r1['id'], r2['id'], r3['id']]
+
+        toolkit.get_action('powerview_create')(
+            context={'user': sysadmin['name']},
+            data_dict=create_dict
+        )
+
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 3)
+
+    def test_powerview_create_resource_id_list_contains_duplicates(self):
+        '''Resource id list is de-duplicated before associations are
+        created.'''
+        sysadmin = Sysadmin()
+        r1 = Resource()
+        r2 = Resource()
+
+        create_dict = self._make_create_data_dict()
+        # r2 id added twice
+        create_dict['resources'] = [r1['id'], r2['id'], r2['id']]
+
+        toolkit.get_action('powerview_create')(
+            context={'user': sysadmin['name']},
+            data_dict=create_dict
+        )
+
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 2)

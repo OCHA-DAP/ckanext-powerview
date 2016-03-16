@@ -11,3 +11,6 @@ class TestBase():
     def setup_class(cls):
         reset_db()
         init_tables()
+
+    def setup(self):
+        reset_db()

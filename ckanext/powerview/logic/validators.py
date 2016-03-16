@@ -24,6 +24,9 @@ def resource_ids_in_list(value, context):
     if not isinstance(value, list):
         raise Invalid(_('Not a list'))
 
+    # remove duplicates
+    value = list(set(value))
+
     for i in value:
         # item must be a string
         if not isinstance(i, basestring):

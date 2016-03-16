@@ -3,7 +3,7 @@ from ckan.logic import validate
 from ckan.plugins import toolkit
 
 from ckanext.powerview.logic import schema
-from ckanext.powerview.model import PowerView
+from ckanext.powerview.model import PowerView, PowerviewResourceAssociation
 
 import logging
 log = logging.getLogger(__name__)
@@ -43,5 +43,17 @@ def powerview_create(context, data_dict):
     session = context['session']
     session.add(powerview)
     session.commit()
+
+    for res_id in data_dict.get('resources', []):
+        # We validate for id duplication, so this shouldn't be true during
+        # create.
+        if PowerviewResourceAssociation.exists(powerview_id=powerview.id,
+                                               resource_id=res_id):
+            raise toolkit.ValidationError("Resource already associated with powerview.",
+                                          error_summary=u"The resource, {0}, is already in the powerview".format(res_id))
+
+        # create the association
+        PowerviewResourceAssociation.create(resource_id=res_id,
+                                            powerview_id=powerview.id)
 
     return powerview.as_dict()

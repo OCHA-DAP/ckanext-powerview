@@ -18,7 +18,36 @@ def init_tables():
         log.debug('PowerView tables already exist')
 
 
-class PowerviewResourceAssociation(domain_object.DomainObject):
+class PowerviewBaseModel(domain_object.DomainObject):
+    @classmethod
+    def filter(cls, **kwargs):
+        return meta.Session.query(cls).filter_by(**kwargs)
+
+    @classmethod
+    def get(cls, **kwargs):
+        instance = cls.filter(**kwargs).first()
+        return instance
+
+    @classmethod
+    def count(cls):
+        return meta.Session.query(cls).count()
+
+    @classmethod
+    def exists(cls, **kwargs):
+        if cls.filter(**kwargs).first():
+            return True
+        else:
+            return False
+
+    @classmethod
+    def create(cls, **kwargs):
+        instance = cls(**kwargs)
+        meta.Session.add(instance)
+        meta.Session.commit()
+        return instance.as_dict()
+
+
+class PowerviewResourceAssociation(PowerviewBaseModel):
     pass
 
 powerview_resource_association_table = Table(
@@ -38,19 +67,8 @@ powerview_resource_association_table = Table(
 meta.mapper(PowerviewResourceAssociation, powerview_resource_association_table)
 
 
-class PowerView(domain_object.DomainObject):
-    @classmethod
-    def filter(cls, **kwargs):
-        return meta.Session.query(cls).filter_by(**kwargs)
-
-    @classmethod
-    def get(cls, **kwargs):
-        instance = cls.filter(**kwargs).first()
-        return instance
-
-    @classmethod
-    def count(cls):
-        return meta.Session.query(cls).count()
+class PowerView(PowerviewBaseModel):
+    pass
 
 powerview_table = Table(
     'powerview', meta.metadata,
