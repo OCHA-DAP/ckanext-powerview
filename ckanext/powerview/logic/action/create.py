@@ -70,4 +70,19 @@ def powerview_add_resource(context, data_dict):
     :param resource_id: id of the resource to add
     :type resource_id: string
     '''
-    pass
+
+    toolkit.check_access('ckanext_powerview_create', context, data_dict)
+
+    powerview_id = data_dict['id']
+    resource_id = data_dict['resource_id']
+
+    if PowerviewResourceAssociation.exists(powerview_id=powerview_id,
+                                           resource_id=resource_id):
+        raise toolkit.ValidationError("Resource already association with powerview.",
+                                      error_summary=u"The resource, {0}, is already in the powerview".format(resource_id))
+
+    # create the association
+    association = PowerviewResourceAssociation.create(resource_id=resource_id,
+                                                      powerview_id=powerview_id)
+
+    return association

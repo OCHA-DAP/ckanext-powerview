@@ -29,8 +29,6 @@ class PowerviewPlugin(plugins.SingletonPlugin):
             'ckanext_powerview_update': ckanext.powerview.logic.auth.update,
             'ckanext_powerview_delete': ckanext.powerview.logic.auth.delete,
             'ckanext_powerview_show': ckanext.powerview.logic.auth.show,
-            # 'ckanext_powerview_add_resource': ckanext.powerview.logic.auth.add_resource,
-            # 'ckanext_powerview_remove_resource': ckanext.powerview.logic.auth.remove_resource,
         }
 
     # IActions

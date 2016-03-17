@@ -3,6 +3,7 @@ from nose import tools as nosetools
 import ckan.plugins.toolkit as toolkit
 import ckan.model as model
 
+from ckantoolkit import ValidationError
 from ckantoolkit.tests.factories import Sysadmin, Resource
 
 from ckanext.powerview.tests import TestBase
@@ -75,3 +76,109 @@ class TestDeletePowerView(TestBase):
         # Still have the resources
         nosetools.assert_equal(
             model.meta.Session.query(model.Resource).count(), 3)
+
+
+class TestPowerviewRemoveResource(TestBase):
+
+    def _make_powerview(self, user, resources=None):
+        '''Make a powerview and return the resulting data_dict.'''
+        data_dict = {
+            'title': 'Title',
+            'description': 'My short description.',
+            'view_type': 'my-view-type',
+            'config': '{"my":"json"}',
+            'private': 'yes'
+        }
+        if resources:
+            data_dict['resources'] = resources
+
+        return toolkit.get_action('powerview_create')(
+            context={'user': user['name']},
+            data_dict=data_dict
+        )
+
+    def test_powerview_remove_resource_valid(self):
+        sysadmin = Sysadmin()
+        r1 = Resource()
+
+        powerview_dict = self._make_powerview(sysadmin, [r1['id']])
+
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 1)
+
+        toolkit.get_action('powerview_remove_resource')(
+            context={'user': sysadmin['name']},
+            data_dict={
+                'id': powerview_dict['id'],
+                'resource_id': r1['id']
+            }
+        )
+
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 0)
+
+    def test_powerview_remove_resource_unassociated_resource(self):
+        '''Calling powerview_remove_resource with an unassociated resource id
+        raises an error.'''
+        sysadmin = Sysadmin()
+        r1 = Resource()
+        r2 = Resource()
+
+        powerview_dict = self._make_powerview(sysadmin, [r1['id']])
+
+        with nosetools.assert_raises(ValidationError):
+            toolkit.get_action('powerview_remove_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={
+                    'id': powerview_dict['id'],
+                    'resource_id': r2['id']
+                }
+            )
+
+    def test_powerview_remove_resource_retains_objects(self):
+        '''Calling powerview_remove_resource doesn't delete powerview or
+        resource.'''
+        sysadmin = Sysadmin()
+        r1 = Resource()
+
+        powerview_dict = self._make_powerview(sysadmin, [r1['id']])
+
+        nosetools.assert_equal(PowerView.count(), 1)
+        nosetools.assert_equal(
+            model.meta.Session.query(model.Resource).count(), 1)
+
+        toolkit.get_action('powerview_remove_resource')(
+            context={'user': sysadmin['name']},
+            data_dict={
+                'id': powerview_dict['id'],
+                'resource_id': r1['id']
+            }
+        )
+
+        nosetools.assert_equal(PowerView.count(), 1)
+        nosetools.assert_equal(
+            model.meta.Session.query(model.Resource).count(), 1)
+
+    def test_powerview_remove_resource_no_longer_in_resource_list(self):
+        '''Calling powerview_remove_resource removes resource id from
+        powerview resource list.'''
+        sysadmin = Sysadmin()
+        r1 = Resource()
+        r2 = Resource()
+
+        powerview_dict = self._make_powerview(sysadmin, [r1['id'], r2['id']])
+
+        toolkit.get_action('powerview_remove_resource')(
+            context={'user': sysadmin['name']},
+            data_dict={
+                'id': powerview_dict['id'],
+                'resource_id': r1['id']
+            }
+        )
+
+        updated_dict = toolkit.get_action('powerview_show')(
+            context={'user': sysadmin['name']},
+            data_dict={
+                'id': powerview_dict['id']
+            }
+        )
+
+        nosetools.assert_equal(updated_dict['resources'], [r2['id']])

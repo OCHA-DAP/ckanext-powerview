@@ -3,6 +3,7 @@ from nose import tools as nosetools
 import ckan.plugins.toolkit as toolkit
 
 from ckantoolkit.tests.factories import Sysadmin, Resource
+from ckantoolkit import ValidationError
 
 from ckanext.powerview.tests import TestBase
 from ckanext.powerview.model import PowerviewResourceAssociation
@@ -89,3 +90,107 @@ class TestCreatePowerView(TestBase):
         )
 
         nosetools.assert_equal(PowerviewResourceAssociation.count(), 2)
+
+
+class TestPowerviewAddResource(TestBase):
+
+    def _make_powerview(self, user, resources=None):
+        '''Make a powerview and return the resulting data_dict.'''
+        data_dict = {
+            'title': 'Title',
+            'description': 'My short description.',
+            'view_type': 'my-view-type',
+            'config': '{"my":"json"}',
+            'private': 'yes'
+        }
+        if resources:
+            data_dict['resources'] = resources
+
+        return toolkit.get_action('powerview_create')(
+            context={'user': user['name']},
+            data_dict=data_dict
+        )
+
+    def test_powerview_add_resource_valid(self):
+        '''Adding a resource to powerview changes the resource list returned
+        for the powerview.'''
+        sysadmin = Sysadmin()
+        r1 = Resource()
+
+        create_dict = self._make_powerview(sysadmin)
+        nosetools.assert_equal(create_dict['resources'], [])
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 0)
+
+        toolkit.get_action('powerview_add_resource')(
+            context={'user': sysadmin['name']},
+            data_dict={
+                'id': create_dict['id'],
+                'resource_id': r1['id']
+            }
+        )
+
+        updated_dict = toolkit.get_action('powerview_show')(
+            context={'user': sysadmin['name']},
+            data_dict={'id': create_dict['id']}
+        )
+
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 1)
+
+        nosetools.assert_equal(updated_dict['resources'], [r1['id']])
+
+    def test_powerview_add_resource_add_resource_to_existing_list(self):
+        '''Adding a resource to powerview maintains existing resources.'''
+        sysadmin = Sysadmin()
+        r1 = Resource()
+        r2 = Resource()
+        r3 = Resource()
+
+        create_dict = self._make_powerview(sysadmin, [r1['id'], r2['id']])
+        nosetools.assert_equal(set(create_dict['resources']),
+                               set([r1['id'], r2['id']]))
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 2)
+
+        toolkit.get_action('powerview_add_resource')(
+            context={'user': sysadmin['name']},
+            data_dict={
+                'id': create_dict['id'],
+                'resource_id': r3['id']
+            }
+        )
+
+        updated_dict = toolkit.get_action('powerview_show')(
+            context={'user': sysadmin['name']},
+            data_dict={'id': create_dict['id']}
+        )
+
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 3)
+        nosetools.assert_equal(set(updated_dict['resources']),
+                               set([r1['id'], r2['id'], r3['id']]))
+
+    def test_powerview_add_resource_multiple_add(self):
+        '''Attempt to add resource multiple times to same powerview raises
+        error.'''
+        sysadmin = Sysadmin()
+        r1 = Resource()
+
+        create_dict = self._make_powerview(sysadmin)
+        nosetools.assert_equal(create_dict['resources'], [])
+
+        toolkit.get_action('powerview_add_resource')(
+            context={'user': sysadmin['name']},
+            data_dict={
+                'id': create_dict['id'],
+                'resource_id': r1['id']
+            }
+        )
+        nosetools.assert_equal(PowerviewResourceAssociation.count(), 1)
+
+        # try to add resources to same powerview again...
+        with nosetools.assert_raises(ValidationError):
+            toolkit.get_action('powerview_add_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={
+                    'id': create_dict['id'],
+                    'resource_id': r1['id']
+                }
+            )
