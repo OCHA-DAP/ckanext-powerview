@@ -9,6 +9,22 @@ from ckantoolkit import ValidationError
 from ckanext.powerview.tests import TestBase
 
 
+def _make_powerview(user):
+    '''Make a powerview and return the resulting data_dict.'''
+    data_dict = {
+        'title': 'Title',
+        'description': 'My short description.',
+        'view_type': 'my-view-type',
+        'config': '{"my":"json"}',
+        'private': 'yes'
+    }
+
+    return toolkit.get_action('powerview_create')(
+        context={'user': user['name']},
+        data_dict=data_dict
+    )
+
+
 class TestCreatePowerView(TestBase):
 
     '''Test schema validation for powerview_create.'''
@@ -257,27 +273,12 @@ class TestShowPowerView(TestBase):
 
     '''Test schema validation for powerview show.'''
 
-    def _make_powerview(self, user):
-        '''Make a powerview and return the resulting data_dict.'''
-        data_dict = {
-            'title': 'Title',
-            'description': 'My short description.',
-            'view_type': 'my-view-type',
-            'config': '{"my":"json"}',
-            'private': 'yes'
-        }
-
-        return toolkit.get_action('powerview_create')(
-            context={'user': user['name']},
-            data_dict=data_dict
-        )
-
     def test_powerview_show_valid_dict(self):
         '''Calling powerview show with valid id passes schema validation with
         no errors raised.'''
         sysadmin = Sysadmin()
 
-        powerview_dict = self._make_powerview(sysadmin)
+        powerview_dict = _make_powerview(sysadmin)
 
         toolkit.get_action('powerview_show')(
             context={'user': sysadmin['name']},
@@ -289,7 +290,7 @@ class TestShowPowerView(TestBase):
 
         sysadmin = Sysadmin()
 
-        self._make_powerview(sysadmin)
+        _make_powerview(sysadmin)
 
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_show')(
@@ -306,7 +307,7 @@ class TestShowPowerView(TestBase):
 
         sysadmin = Sysadmin()
 
-        self._make_powerview(sysadmin)
+        _make_powerview(sysadmin)
 
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_show')(
@@ -323,26 +324,11 @@ class TestDeletePowerView(TestBase):
 
     '''Test schema validation for powerview delete.'''
 
-    def _make_powerview(self, user):
-        '''Make a powerview and return the resulting data_dict.'''
-        data_dict = {
-            'title': 'Title',
-            'description': 'My short description.',
-            'view_type': 'my-view-type',
-            'config': '{"my":"json"}',
-            'private': 'yes'
-        }
-
-        return toolkit.get_action('powerview_create')(
-            context={'user': user['name']},
-            data_dict=data_dict
-        )
-
     def test_powerview_delete_valid_id(self):
         '''powerview delete passes schema validation with no errors raised.'''
         sysadmin = Sysadmin()
 
-        powerview_dict = self._make_powerview(sysadmin)
+        powerview_dict = _make_powerview(sysadmin)
 
         toolkit.get_action('powerview_delete')(
             context={'user': sysadmin['name']},
@@ -354,7 +340,7 @@ class TestDeletePowerView(TestBase):
 
         sysadmin = Sysadmin()
 
-        self._make_powerview(sysadmin)
+        _make_powerview(sysadmin)
 
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_delete')(
@@ -371,7 +357,7 @@ class TestDeletePowerView(TestBase):
 
         sysadmin = Sysadmin()
 
-        self._make_powerview(sysadmin)
+        _make_powerview(sysadmin)
 
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_delete')(
@@ -387,23 +373,6 @@ class TestDeletePowerView(TestBase):
 class TestPowerviewResourceAdd(TestBase):
 
     '''Test schema validation for powerview_add_resource action.'''
-
-    def _make_powerview(self, user, resources=None):
-        '''Make a powerview and return the resulting data_dict.'''
-        data_dict = {
-            'title': 'Title',
-            'description': 'My short description.',
-            'view_type': 'my-view-type',
-            'config': '{"my":"json"}',
-            'private': 'yes'
-        }
-        if resources:
-            data_dict['resources'] = resources
-
-        return toolkit.get_action('powerview_create')(
-            context={'user': user['name']},
-            data_dict=data_dict
-        )
 
     def test_powerview_add_resource_no_powerview_id(self):
         '''Calling powerview_add_resource with no powerview id raises
@@ -425,7 +394,7 @@ class TestPowerviewResourceAdd(TestBase):
         '''Calling powerview_add_resource with no resource id raises
         ValidationError.'''
         sysadmin = Sysadmin()
-        powerview = self._make_powerview(sysadmin)
+        powerview = _make_powerview(sysadmin)
 
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_add_resource')(
@@ -457,7 +426,7 @@ class TestPowerviewResourceAdd(TestBase):
         '''Calling powerview_add_resource with nonexisting resource id raises
         ValidationError.'''
         sysadmin = Sysadmin()
-        powerview = self._make_powerview(sysadmin)
+        powerview = _make_powerview(sysadmin)
 
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_add_resource')(
@@ -474,23 +443,6 @@ class TestPowerviewResourceAdd(TestBase):
 class TestPowerviewResourceRemove(TestBase):
 
     '''Test schema validation for powerview_remove_resource action.'''
-
-    def _make_powerview(self, user, resources=None):
-        '''Make a powerview and return the resulting data_dict.'''
-        data_dict = {
-            'title': 'Title',
-            'description': 'My short description.',
-            'view_type': 'my-view-type',
-            'config': '{"my":"json"}',
-            'private': 'yes'
-        }
-        if resources:
-            data_dict['resources'] = resources
-
-        return toolkit.get_action('powerview_create')(
-            context={'user': user['name']},
-            data_dict=data_dict
-        )
 
     def test_powerview_remove_resource_no_powerview_id(self):
         '''Calling powerview_remove_resource with no powerview id raises
@@ -512,7 +464,7 @@ class TestPowerviewResourceRemove(TestBase):
         '''Calling powerview_remove_resource with no resource id raises
         ValidationError.'''
         sysadmin = Sysadmin()
-        powerview = self._make_powerview(sysadmin)
+        powerview = _make_powerview(sysadmin)
 
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_remove_resource')(
@@ -544,7 +496,7 @@ class TestPowerviewResourceRemove(TestBase):
         '''Calling powerview_remove_resource with nonexisting resource id raises
         ValidationError.'''
         sysadmin = Sysadmin()
-        powerview = self._make_powerview(sysadmin)
+        powerview = _make_powerview(sysadmin)
 
         with nosetools.assert_raises(ValidationError) as cm:
             toolkit.get_action('powerview_remove_resource')(
