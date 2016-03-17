@@ -2,7 +2,7 @@ from nose import tools as nosetools
 
 import ckan.plugins.toolkit as toolkit
 
-from ckantoolkit.tests.factories import Sysadmin
+from ckantoolkit.tests.factories import Sysadmin, Resource
 
 from ckantoolkit import ValidationError
 
@@ -380,5 +380,179 @@ class TestDeletePowerView(TestBase):
             )
         error_dict = cm.exception.error_dict['id']
         nosetools.assert_true("Not found: PowerView"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+
+class TestPowerviewResourceAdd(TestBase):
+
+    '''Test schema validation for powerview_add_resource action.'''
+
+    def _make_powerview(self, user, resources=None):
+        '''Make a powerview and return the resulting data_dict.'''
+        data_dict = {
+            'title': 'Title',
+            'description': 'My short description.',
+            'view_type': 'my-view-type',
+            'config': '{"my":"json"}',
+            'private': 'yes'
+        }
+        if resources:
+            data_dict['resources'] = resources
+
+        return toolkit.get_action('powerview_create')(
+            context={'user': user['name']},
+            data_dict=data_dict
+        )
+
+    def test_powerview_add_resource_no_powerview_id(self):
+        '''Calling powerview_add_resource with no powerview id raises
+        ValidationError.'''
+        sysadmin = Sysadmin()
+        res = Resource()
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_add_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={'resource_id': res['id']}
+            )
+        error_dict = cm.exception.error_dict['id']
+        nosetools.assert_true("Missing value"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_add_resource_no_resource_id(self):
+        '''Calling powerview_add_resource with no resource id raises
+        ValidationError.'''
+        sysadmin = Sysadmin()
+        powerview = self._make_powerview(sysadmin)
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_add_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={'id': powerview['id']}
+            )
+        error_dict = cm.exception.error_dict['resource_id']
+        nosetools.assert_true("Missing value"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_add_resource_nonexisting_powerview_id(self):
+        '''Calling powerview_add_resource with a nonexisting powerview id
+        raises ValidationError.'''
+        sysadmin = Sysadmin()
+        res = Resource()
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_add_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={'resource_id': res['id'], 'id': 'non-existing-id'}
+            )
+        error_dict = cm.exception.error_dict['id']
+        nosetools.assert_true("Not found: PowerView"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_add_resource_nonexisting_resource_id(self):
+        '''Calling powerview_add_resource with nonexisting resource id raises
+        ValidationError.'''
+        sysadmin = Sysadmin()
+        powerview = self._make_powerview(sysadmin)
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_add_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={'id': powerview['id'],
+                           'resource_id': 'non-existing-id'}
+            )
+        error_dict = cm.exception.error_dict['resource_id']
+        nosetools.assert_true("Not found: Resource"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+
+class TestPowerviewResourceRemove(TestBase):
+
+    '''Test schema validation for powerview_remove_resource action.'''
+
+    def _make_powerview(self, user, resources=None):
+        '''Make a powerview and return the resulting data_dict.'''
+        data_dict = {
+            'title': 'Title',
+            'description': 'My short description.',
+            'view_type': 'my-view-type',
+            'config': '{"my":"json"}',
+            'private': 'yes'
+        }
+        if resources:
+            data_dict['resources'] = resources
+
+        return toolkit.get_action('powerview_create')(
+            context={'user': user['name']},
+            data_dict=data_dict
+        )
+
+    def test_powerview_remove_resource_no_powerview_id(self):
+        '''Calling powerview_remove_resource with no powerview id raises
+        ValidationError.'''
+        sysadmin = Sysadmin()
+        res = Resource()
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_remove_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={'resource_id': res['id']}
+            )
+        error_dict = cm.exception.error_dict['id']
+        nosetools.assert_true("Missing value"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_remove_resource_no_resource_id(self):
+        '''Calling powerview_remove_resource with no resource id raises
+        ValidationError.'''
+        sysadmin = Sysadmin()
+        powerview = self._make_powerview(sysadmin)
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_remove_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={'id': powerview['id']}
+            )
+        error_dict = cm.exception.error_dict['resource_id']
+        nosetools.assert_true("Missing value"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_remove_resource_nonexisting_powerview_id(self):
+        '''Calling powerview_remove_resource with a nonexisting powerview id
+        raises ValidationError.'''
+        sysadmin = Sysadmin()
+        res = Resource()
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_remove_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={'resource_id': res['id'], 'id': 'non-existing-id'}
+            )
+        error_dict = cm.exception.error_dict['id']
+        nosetools.assert_true("Not found: PowerView"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_remove_resource_nonexisting_resource_id(self):
+        '''Calling powerview_remove_resource with nonexisting resource id raises
+        ValidationError.'''
+        sysadmin = Sysadmin()
+        powerview = self._make_powerview(sysadmin)
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_remove_resource')(
+                context={'user': sysadmin['name']},
+                data_dict={'id': powerview['id'],
+                           'resource_id': 'non-existing-id'}
+            )
+        error_dict = cm.exception.error_dict['resource_id']
+        nosetools.assert_true("Not found: Resource"
                               in error_dict,
                               "Expected string not in exception message.")

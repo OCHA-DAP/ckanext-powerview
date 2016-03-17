@@ -9,6 +9,7 @@ not_empty = toolkit.get_validator('not_empty')
 convert_to_json_if_string = toolkit.get_converter('convert_to_json_if_string')
 powerview_id_exists = toolkit.get_validator('powerview_id_exists')
 resource_ids_in_list = toolkit.get_validator('resource_ids_in_list')
+resource_id_exists = toolkit.get_validator('resource_id_exists')
 
 
 def powerview_base_schema():
@@ -49,5 +50,21 @@ def powerview_show_schema():
 def powerview_delete_schema():
     schema = {
         'id': [not_empty, unicode, powerview_id_exists]
+    }
+    return schema
+
+
+def powerview_resource_association_create_schema():
+    schema = {
+        'id': [not_empty, unicode, powerview_id_exists],
+        'resource_id': [not_empty, unicode, resource_id_exists]
+    }
+    return schema
+
+
+def powerview_resource_association_delete_schema():
+    schema = {
+        'id': [not_empty, unicode, powerview_id_exists],
+        'resource_id': [not_empty, unicode, resource_id_exists]
     }
     return schema

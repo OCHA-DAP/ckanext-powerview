@@ -57,3 +57,17 @@ def powerview_create(context, data_dict):
                                             powerview_id=powerview.id)
 
     return powerview.as_dict()
+
+
+@validate(schema.powerview_resource_association_create_schema)
+def powerview_add_resource(context, data_dict):
+    '''Add a resource id to an existing powerview.
+
+    You must provide your API key in the Authorization header.
+
+    :param id: id of the powerview
+    :type id: string
+    :param resource_id: id of the resource to add
+    :type resource_id: string
+    '''
+    pass

@@ -24,3 +24,17 @@ def powerview_delete(context, data_dict):
     session = context['session']
     powerview.delete()
     session.commit()
+
+
+@validate(schema.powerview_resource_association_delete_schema)
+def powerview_remove_resource(context, data_dict):
+    '''Remove a resource id to an existing powerview.
+
+    You must provide your API key in the Authorization header.
+
+    :param id: id of the powerview
+    :type id: string
+    :param resource_id: id of the resource to add
+    :type resource_id: string
+    '''
+    pass
