@@ -22,5 +22,5 @@ def powerview_delete(context, data_dict):
     powerview = PowerView.get(id=data_dict['id'])
 
     session = context['session']
-    powerview.purge()
+    powerview.delete()
     session.commit()
