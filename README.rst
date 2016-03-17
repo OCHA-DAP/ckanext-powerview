@@ -2,11 +2,11 @@
    these badges work. The necessary Travis and Coverage config files have been
    generated for you.
 
-.. image:: https://travis-ci.org/OCHA-DAP/hdx-powerview.svg?branch=master
-    :target: https://travis-ci.org/OCHA-DAP/hdx-powerview
+.. image:: https://travis-ci.org/OCHA-DAP/ckanext-powerview.svg?branch=master
+    :target: https://travis-ci.org/OCHA-DAP/ckanext-powerview
 
-.. image:: https://coveralls.io/repos/OCHA-DAP/hdx-powerview/badge.svg
-  :target: https://coveralls.io/r/OCHA-DAP/hdx-powerview
+.. image:: https://coveralls.io/repos/OCHA-DAP/ckanext-powerview/badge.svg
+  :target: https://coveralls.io/r/OCHA-DAP/ckanext-powerview
 
 
 =================
