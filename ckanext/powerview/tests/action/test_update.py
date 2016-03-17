@@ -2,14 +2,14 @@ from nose import tools as nosetools
 
 import ckan.plugins.toolkit as toolkit
 
-from ckantoolkit.tests.factories import Sysadmin
+from ckantoolkit.tests.factories import Sysadmin, Resource
 
 from ckanext.powerview.tests import TestBase
 
 
 class TestUpdatePowerView(TestBase):
 
-    def _make_powerview(self, user):
+    def _make_powerview(self, user, resources=None):
         '''Make a powerview and return the resulting data_dict.'''
         data_dict = {
             'title': 'Title',
@@ -18,6 +18,8 @@ class TestUpdatePowerView(TestBase):
             'config': '{"my":"json"}',
             'private': 'yes'
         }
+        if resources:
+            data_dict['resources'] = resources
 
         return toolkit.get_action('powerview_create')(
             context={'user': user['name']},
@@ -57,3 +59,49 @@ class TestUpdatePowerView(TestBase):
 
         nosetools.assert_equal(powerview_dict_update['title'],
                                powerview_dict['title'])
+
+    def test_powerview_update_resources_unchanged(self):
+        '''Updating a powerview containing resources, leaves them unchanged.'''
+
+        sysadmin = Sysadmin()
+        r1 = Resource()
+        r2 = Resource()
+        r3 = Resource()
+        resource_id_list = [r1['id'], r2['id'], r3['id']]
+
+        # powerview with resources
+        powerview_dict = self._make_powerview(sysadmin, resource_id_list)
+        # Update dict with new title
+        powerview_dict['title'] = "New Title"
+
+        powerview_dict_update = toolkit.get_action('powerview_update')(
+            context={'user': sysadmin['name']},
+            data_dict=powerview_dict
+        )
+
+        nosetools.assert_equal(set(resource_id_list),
+                               set(powerview_dict_update['resources']))
+
+    def test_powerview_update_resources_changed(self):
+        '''Updating a powerview's resources, returns expected list in dict.'''
+
+        sysadmin = Sysadmin()
+        r1 = Resource()
+        r2 = Resource()
+        r3 = Resource()
+        r4 = Resource()
+        resource_id_list = [r1['id'], r2['id'], r3['id']]
+        updated_resource_id_list = [r1['id'], r3['id'], r4['id']]
+
+        # powerview with resources
+        powerview_dict = self._make_powerview(sysadmin, resource_id_list)
+        # Update dict with new resource list
+        powerview_dict['resources'] = updated_resource_id_list
+
+        powerview_dict_update = toolkit.get_action('powerview_update')(
+            context={'user': sysadmin['name']},
+            data_dict=powerview_dict
+        )
+
+        nosetools.assert_equal(set(updated_resource_id_list),
+                               set(powerview_dict_update['resources']))

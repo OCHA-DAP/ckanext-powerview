@@ -4,7 +4,7 @@ from ckan.logic import validate
 from ckan.plugins import toolkit
 
 from ckanext.powerview.logic import schema
-from ckanext.powerview.model import PowerView
+from ckanext.powerview.model import PowerView, PowerviewResourceAssociation
 
 import logging
 log = logging.getLogger(__name__)
@@ -42,6 +42,28 @@ def powerview_update(context, data_dict):
     for k, v in data_dict.items():
         if k not in ignored_keys:
             setattr(powerview, k, v)
+
+    # Handle resources update.
+
+    # the original id list
+    org_ids = PowerviewResourceAssociation.get_resource_ids_for_powerview(
+        powerview.id)
+    # list of ids from the data_dict
+    new_ids = data_dict['resources']
+
+    resources_to_add = set(new_ids) - set(org_ids)
+    resources_to_remove = set(org_ids) - set(new_ids)
+
+    # add new ids
+    for res_id in resources_to_add:
+        PowerviewResourceAssociation.create(resource_id=res_id,
+                                            powerview_id=powerview.id)
+
+    # remove ids
+    for res_id in resources_to_remove:
+        assoc = PowerviewResourceAssociation.get(resource_id=res_id,
+                                                 powerview_id=powerview.id)
+        assoc.delete()
 
     powerview.last_modified = datetime.datetime.now()
 
