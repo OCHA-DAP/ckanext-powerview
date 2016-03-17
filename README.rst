@@ -58,17 +58,6 @@ To install ckanext-powerview:
      sudo service apache2 reload
 
 
----------------
-Config Settings
----------------
-
-Document any optional config settings here. For example::
-
-    # The minimum number of hours to wait before re-checking a resource
-    # (optional, default: 24).
-    ckanext.powerview.some_setting = some_default_value
-
-
 ------------------------
 Development Installation
 ------------------------
@@ -79,6 +68,7 @@ do::
     git clone https://github.com/OCHA-DAP/ckanext-powerview.git
     cd ckanext-powerview
     python setup.py develop
+    pip install -r requirements.txt
     pip install -r dev-requirements.txt
 
 
@@ -91,16 +81,16 @@ All actions in the PowerView extension are available in the CKAN Action API.
 PowerView actions::
 
     - create a new powerview (sysadmins only)
-    curl -X POST http://127.0.0.1:5000/api/3/action/ckanext_powerview_create -H "Authorization:{YOUR-API-KEY}" -d '{"title": "My New View", "view_type": "my-view-type"}'
+    curl -X POST http://127.0.0.1:5000/api/3/action/powerview_create -H "Authorization:{YOUR-API-KEY}" -d '{"title": "My New View", "view_type": "my-view-type"}'
 
     - update an existing powerview (sysadmins only)
-    curl -X POST http://127.0.0.1:5000/api/3/action/ckanext_powerview_update -H "Authorization:{YOUR-API-KEY}" -d '{"id":"my-powerview-id", "title": "My Updated Title", "view_type": "my-view-type"}'
+    curl -X POST http://127.0.0.1:5000/api/3/action/powerview_update -H "Authorization:{YOUR-API-KEY}" -d '{"id":"my-powerview-id", "title": "My Updated Title", "view_type": "my-view-type"}'
 
     - delete a powerview (sysadmins only)
-    curl -X POST http://127.0.0.1:5000/api/3/action/ckanext_powerview_delete -H "Authorization:{YOUR-API-KEY}" -d '{"id": "my-powerview-id"}'
+    curl -X POST http://127.0.0.1:5000/api/3/action/powerview_delete -H "Authorization:{YOUR-API-KEY}" -d '{"id": "my-powerview-id"}'
 
     - show a powerview
-    curl -X POST http://127.0.0.1:5000/api/3/action/ckanext_powerview_show -d '{"id": "my-powerview-id"}'
+    curl -X POST http://127.0.0.1:5000/api/3/action/powerview_show -d '{"id": "my-powerview-id"}'
 
 
 -----------------
