@@ -8,6 +8,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
+@toolkit.side_effect_free
 @validate(schema.powerview_show_schema)
 def powerview_show(context, data_dict):
     '''Show an existing powerview.
