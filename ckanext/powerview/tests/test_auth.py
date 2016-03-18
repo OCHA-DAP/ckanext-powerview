@@ -332,3 +332,46 @@ class TestPowerViewResourceListAuth(TestBase):
                                 'ckanext_powerview_resource_list',
                                 context=context,
                                 id=powerview['id'])
+
+    def test_powerview_resource_list_sysadmin_private_powerview(self):
+        '''
+        Calling powerview resource list with a sysadmin for a private
+        powerview doesn't raise NotAuthorized.
+        '''
+        a_sysadmin = factories.Sysadmin()
+        powerview = _make_powerview(a_sysadmin, private='yes')
+
+        context = {'user': a_sysadmin['name'], 'model': None}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_resource_list',
+                              context=context,
+                              id=powerview['id']))
+
+    def test_powerview_resource_list_normal_user_private_powerview(self):
+        '''
+        Calling powerview resource list with a normal user on a private
+        powerview raises NotAuthorized.
+        '''
+        a_sysadmin = factories.Sysadmin()
+        a_user = factories.User()
+        powerview = _make_powerview(a_sysadmin, private='yes')
+
+        context = {'user': a_user['name'], 'model': None}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_resource_list',
+                                context=context,
+                                id=powerview['id'])
+
+    def test_powerview_resource_list_anon_user_private_powerview(self):
+        '''
+        Calling powerview resource list with an anon user on a private
+        powerview raises NotAuthorized.
+        '''
+        a_sysadmin = factories.Sysadmin()
+        powerview = _make_powerview(a_sysadmin, private='yes')
+
+        context = {'user': '', 'model': None}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_resource_list',
+                                context=context,
+                                id=powerview['id'])
