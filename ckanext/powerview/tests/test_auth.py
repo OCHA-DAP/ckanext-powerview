@@ -3,8 +3,10 @@ from nose import tools as nosetools
 from ckantoolkit.tests import helpers, factories
 from ckantoolkit import NotAuthorized
 
+from ckanext.powerview.tests import TestBase
 
-class TestPowerViewCreateAuth(helpers.FunctionalTestBase):
+
+class TestPowerViewCreateAuth(TestBase):
 
     def test_powerview_create_sysadmin(self):
         '''
@@ -34,7 +36,7 @@ class TestPowerViewCreateAuth(helpers.FunctionalTestBase):
                                 'ckanext_powerview_create', context=context)
 
 
-class TestPowerViewDeleteAuth(helpers.FunctionalTestBase):
+class TestPowerViewDeleteAuth(TestBase):
 
     def test_powerview_delete_sysadmin(self):
         '''
@@ -64,7 +66,7 @@ class TestPowerViewDeleteAuth(helpers.FunctionalTestBase):
                                 'ckanext_powerview_delete', context=context)
 
 
-class TestPowerViewUpdateAuth(helpers.FunctionalTestBase):
+class TestPowerViewUpdateAuth(TestBase):
 
     def test_powerview_update_sysadmin(self):
         '''
@@ -94,7 +96,7 @@ class TestPowerViewUpdateAuth(helpers.FunctionalTestBase):
                                 'ckanext_powerview_update', context=context)
 
 
-class TestPowerViewShowAuth(helpers.FunctionalTestBase):
+class TestPowerViewShowAuth(TestBase):
 
     def test_powerview_show_sysadmin(self):
         '''
