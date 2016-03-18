@@ -1,7 +1,6 @@
 import ckan.plugins.toolkit as toolkit
 
 import ckan.model as model
-from ckan.new_authz import is_authorized as ckan_is_authorized
 
 from ckantoolkit import _, NotAuthorized
 
