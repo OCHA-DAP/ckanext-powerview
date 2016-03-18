@@ -92,11 +92,15 @@ PowerView actions::
     - show a powerview
     curl -X POST http://127.0.0.1:5000/api/3/action/powerview_show -d '{"id": "my-powerview-id"}'
 
+    - list resources in a powerview
+    curl -X POST http://127.0.0.1:5000/api/3/action/powerview_resource_list -d '{"id": "my-powerview-id"}'
+
     - add a resource to an existing powerview (sysadmins only)
     curl -X POST http://127.0.0.1:5000/api/3/action/powerview_add_resource -d '{"id": "my-powerview-id", "resource_id": "my-resource-id"}'
 
     - remove a resource to an existing powerview (sysadmins only)
     curl -X POST http://127.0.0.1:5000/api/3/action/powerview_remove_resource -d '{"id": "my-powerview-id", "resource_id": "my-resource-id"}'
+
 
 
 -----------------
