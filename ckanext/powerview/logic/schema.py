@@ -68,3 +68,10 @@ def powerview_resource_association_delete_schema():
         'resource_id': [not_empty, unicode, resource_id_exists]
     }
     return schema
+
+
+def powerview_resource_list():
+    schema = {
+        'id': [not_empty, unicode, powerview_id_exists],
+    }
+    return schema

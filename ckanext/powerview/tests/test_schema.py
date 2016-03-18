@@ -320,6 +320,56 @@ class TestShowPowerView(TestBase):
                               "Expected string not in exception message.")
 
 
+class TestPowerViewResourceList(TestBase):
+
+    '''Test schema validation for powerview resourse list.'''
+
+    def test_powerview_resource_list_valid_dict(self):
+        '''Calling powerview resource list with valid id passes schema
+        validation with no errors raised.'''
+        sysadmin = Sysadmin()
+
+        powerview_dict = _make_powerview(sysadmin)
+
+        toolkit.get_action('powerview_resource_list')(
+            context={'user': sysadmin['name']},
+            data_dict={'id': powerview_dict['id']}
+        )
+
+    def test_powerview_resource_list_no_id(self):
+        '''Calling powerview resource list with a missing id raises error.'''
+        sysadmin = Sysadmin()
+
+        _make_powerview(sysadmin)
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_resource_list')(
+                context={'user': sysadmin['name']},
+                data_dict={}
+            )
+        error_dict = cm.exception.error_dict['id']
+        nosetools.assert_true("Missing value"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+    def test_powerview_resource_list_nonexisting_id(self):
+        '''Calling powerview resource list with a non-existing id raises
+        error.'''
+        sysadmin = Sysadmin()
+
+        _make_powerview(sysadmin)
+
+        with nosetools.assert_raises(ValidationError) as cm:
+            toolkit.get_action('powerview_resource_list')(
+                context={'user': sysadmin['name']},
+                data_dict={'id': 'non-existin-id'}
+            )
+        error_dict = cm.exception.error_dict['id']
+        nosetools.assert_true("Not found: PowerView"
+                              in error_dict,
+                              "Expected string not in exception message.")
+
+
 class TestDeletePowerView(TestBase):
 
     '''Test schema validation for powerview delete.'''

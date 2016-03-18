@@ -1,8 +1,9 @@
 import ckan.plugins.toolkit as toolkit
 
 import ckan.model as model
+from ckan.new_authz import is_authorized as ckan_is_authorized
 
-from ckantoolkit import _
+from ckantoolkit import _, NotAuthorized
 
 from ckanext.powerview.model import PowerView
 
@@ -59,6 +60,38 @@ def show(context, data_dict):
                          .format(user, powerview.id))}
     else:
         return {'success': False}
+
+
+@toolkit.auth_allow_anonymous_access
+def resource_list(context, data_dict):
+    '''List resources in a powerview.
+
+    If a user hasn't got permission to view a resource contained by the
+    powerview, they won't be authorized.
+    '''
+    user = context.get('user')
+
+    powerview = toolkit.get_action('powerview_show')(
+        context=context,
+        data_dict={'id': data_dict['id']}
+    )
+
+    if not powerview:
+        return {'success': False}
+
+    # check authentication against each resource
+    for res_id in powerview['resources']:
+        try:
+            toolkit.check_access('resource_show', context,
+                                 data_dict={'id': res_id})
+        except NotAuthorized:
+            return {
+                'success': False,
+                'msg': _('User {0} not authorized to read resource {1}'
+                         .format(user, res_id))
+            }
+
+    return {'success': True}
 
 
 def _user_has_permission_for_powerview(user, powerview):
