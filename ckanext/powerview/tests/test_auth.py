@@ -8,7 +8,7 @@ from ckantoolkit import NotAuthorized
 from ckanext.powerview.tests import TestBase
 
 
-def _make_powerview(user, private='yes'):
+def _make_powerview(user, private='yes', ignore_auth=False):
     '''Make a powerview and return the resulting data_dict.'''
     data_dict = {
         'title': 'Title',
@@ -17,9 +17,13 @@ def _make_powerview(user, private='yes'):
         'config': '{"my":"json"}',
         'private': private
     }
+    context = {
+        'user': user['name'],
+        'ignore_auth': ignore_auth
+    }
 
     return toolkit.get_action('powerview_create')(
-        context={'user': user['name']},
+        context=context,
         data_dict=data_dict
     )
 
@@ -190,3 +194,32 @@ class TestPowerViewShowAuth(TestBase):
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
                                 'ckanext_powerview_show',
                                 context=context, id='id-not-here')
+
+    def test_powerview_show_private_created_by_not_sysadmin(self):
+        '''
+        Calling powerview show for a private powerview, that's not been
+        created by a sysadmin, should allow that user to view it.'''
+        a_user = factories.User()
+        # making a private powerview without the usual auth, so a non-sysadmin
+        # can create.
+        powerview = _make_powerview(a_user, private='yes', ignore_auth=True)
+
+        context = {'user': a_user['name'], 'model': None}
+        nosetools.assert_true(helpers.call_auth('ckanext_powerview_show',
+                                                context=context,
+                                                id=powerview['id']))
+
+    def test_powerview_show_private_created_by_not_sysadmin_auth_by_syadmin(self):
+        '''
+        Calling powerview show for a private powerview, that's not been
+        created by a sysadmin, should still allow a sysadnin to view it.'''
+        a_user = factories.User()
+        a_sysadmin = factories.Sysadmin()
+        # making a private powerview without the usual auth, so a non-sysadmin
+        # can create.
+        powerview = _make_powerview(a_user, private='yes', ignore_auth=True)
+
+        context = {'user': a_sysadmin['name'], 'model': None}
+        nosetools.assert_true(helpers.call_auth('ckanext_powerview_show',
+                                                context=context,
+                                                id=powerview['id']))
