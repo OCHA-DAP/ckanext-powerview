@@ -6,26 +6,8 @@ import ckan.model as model
 from ckantoolkit import ValidationError
 from ckantoolkit.tests.factories import Sysadmin, Resource
 
-from ckanext.powerview.tests import TestBase
+from ckanext.powerview.tests import TestBase, factories
 from ckanext.powerview.model import PowerView, PowerviewResourceAssociation
-
-
-def _make_powerview(user, resources=None):
-    '''Make a powerview and return the resulting data_dict.'''
-    data_dict = {
-        'title': 'Title',
-        'description': 'My short description.',
-        'view_type': 'my-view-type',
-        'config': '{"my":"json"}',
-        'private': 'yes'
-    }
-    if resources:
-        data_dict['resources'] = resources
-
-    return toolkit.get_action('powerview_create')(
-        context={'user': user['name']},
-        data_dict=data_dict
-    )
 
 
 class TestDeletePowerView(TestBase):
@@ -34,7 +16,7 @@ class TestDeletePowerView(TestBase):
         '''Calling powerview delete with valid data_dict.'''
         sysadmin = Sysadmin()
 
-        powerview_dict = _make_powerview(sysadmin)
+        powerview_dict = factories.PowerView()
 
         # one powerview
         nosetools.assert_equal(PowerView.count(), 1)
@@ -57,7 +39,7 @@ class TestDeletePowerView(TestBase):
         r3 = Resource()
         resource_id_list = [r1['id'], r2['id'], r3['id']]
 
-        powerview_dict = _make_powerview(sysadmin, resource_id_list)
+        powerview_dict = factories.PowerView(resources=resource_id_list)
 
         # one powerview
         nosetools.assert_equal(PowerView.count(), 1)
@@ -84,7 +66,7 @@ class TestPowerviewRemoveResource(TestBase):
         sysadmin = Sysadmin()
         r1 = Resource()
 
-        powerview_dict = _make_powerview(sysadmin, [r1['id']])
+        powerview_dict = factories.PowerView(resources=[r1['id']])
 
         nosetools.assert_equal(PowerviewResourceAssociation.count(), 1)
 
@@ -105,7 +87,7 @@ class TestPowerviewRemoveResource(TestBase):
         r1 = Resource()
         r2 = Resource()
 
-        powerview_dict = _make_powerview(sysadmin, [r1['id']])
+        powerview_dict = factories.PowerView(resources=[r1['id']])
 
         with nosetools.assert_raises(ValidationError):
             toolkit.get_action('powerview_remove_resource')(
@@ -122,7 +104,7 @@ class TestPowerviewRemoveResource(TestBase):
         sysadmin = Sysadmin()
         r1 = Resource()
 
-        powerview_dict = _make_powerview(sysadmin, [r1['id']])
+        powerview_dict = factories.PowerView(resources=[r1['id']])
 
         nosetools.assert_equal(PowerView.count(), 1)
         nosetools.assert_equal(
@@ -147,7 +129,7 @@ class TestPowerviewRemoveResource(TestBase):
         r1 = Resource()
         r2 = Resource()
 
-        powerview_dict = _make_powerview(sysadmin, [r1['id'], r2['id']])
+        powerview_dict = factories.PowerView(resources=[r1['id'], r2['id']])
 
         toolkit.get_action('powerview_remove_resource')(
             context={'user': sysadmin['name']},

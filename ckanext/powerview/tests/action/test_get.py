@@ -4,25 +4,7 @@ import ckan.plugins.toolkit as toolkit
 
 from ckantoolkit.tests.factories import Sysadmin, Resource
 
-from ckanext.powerview.tests import TestBase
-
-
-def _make_powerview(user, resources=None):
-    '''Make a powerview and return the resulting data_dict.'''
-    data_dict = {
-        'title': 'Title',
-        'description': 'My short description.',
-        'view_type': 'my-view-type',
-        'config': '{"my":"json"}',
-        'private': 'yes'
-    }
-    if resources:
-        data_dict['resources'] = resources
-
-    return toolkit.get_action('powerview_create')(
-        context={'user': user['name']},
-        data_dict=data_dict
-    )
+from ckanext.powerview.tests import TestBase, factories
 
 
 class TestShowPowerView(TestBase):
@@ -31,7 +13,7 @@ class TestShowPowerView(TestBase):
         '''Calling powerview show with valid id.'''
         sysadmin = Sysadmin()
 
-        powerview_dict_create = _make_powerview(sysadmin)
+        powerview_dict_create = factories.PowerView()
 
         powerview_dict_show = toolkit.get_action('powerview_show')(
             context={'user': sysadmin['name']},
@@ -47,10 +29,9 @@ class TestShowPowerView(TestBase):
         r2 = Resource()
         r3 = Resource()
 
-        powerview_dict_create = _make_powerview(sysadmin,
-                                                [r1['id'],
-                                                 r2['id'],
-                                                 r3['id']])
+        powerview_dict_create = factories.PowerView(resources=[r1['id'],
+                                                               r2['id'],
+                                                               r3['id']])
 
         powerview_dict_show = toolkit.get_action('powerview_show')(
             context={'user': sysadmin['name']},
@@ -76,7 +57,7 @@ class TestPowerViewResourceList(TestBase):
         '''
         sysadmin = Sysadmin()
 
-        powerview_dict = _make_powerview(sysadmin)
+        powerview_dict = factories.PowerView()
 
         resource_list = toolkit.get_action('powerview_resource_list')(
             context={'user': sysadmin['name']},
@@ -95,9 +76,9 @@ class TestPowerViewResourceList(TestBase):
         r2 = Resource()
         r3 = Resource()
 
-        powerview = _make_powerview(sysadmin, resources=[r1['id'],
-                                                         r2['id'],
-                                                         r3['id']])
+        powerview = factories.PowerView(resources=[r1['id'],
+                                                   r2['id'],
+                                                   r3['id']])
 
         resource_list = toolkit.get_action('powerview_resource_list')(
             context={'user': sysadmin['name']},

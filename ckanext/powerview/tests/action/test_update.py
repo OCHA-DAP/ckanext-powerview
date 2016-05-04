@@ -4,33 +4,16 @@ import ckan.plugins.toolkit as toolkit
 
 from ckantoolkit.tests.factories import Sysadmin, Resource
 
-from ckanext.powerview.tests import TestBase
+from ckanext.powerview.tests import TestBase, factories
 
 
 class TestUpdatePowerView(TestBase):
-
-    def _make_powerview(self, user, resources=None):
-        '''Make a powerview and return the resulting data_dict.'''
-        data_dict = {
-            'title': 'Title',
-            'description': 'My short description.',
-            'view_type': 'my-view-type',
-            'config': '{"my":"json"}',
-            'private': 'yes'
-        }
-        if resources:
-            data_dict['resources'] = resources
-
-        return toolkit.get_action('powerview_create')(
-            context={'user': user['name']},
-            data_dict=data_dict
-        )
 
     def test_powerview_update(self):
         '''Updating with valid data_dict.'''
         sysadmin = Sysadmin()
 
-        powerview_dict_create = self._make_powerview(sysadmin)
+        powerview_dict_create = factories.PowerView()
 
         powerview_dict_update = toolkit.get_action('powerview_update')(
             context={'user': sysadmin['name']},
@@ -49,7 +32,7 @@ class TestUpdatePowerView(TestBase):
         '''Update a powerview with a title.'''
         sysadmin = Sysadmin()
 
-        powerview_dict = self._make_powerview(sysadmin)
+        powerview_dict = factories.PowerView()
         powerview_dict['title'] = "New Title"
 
         powerview_dict_update = toolkit.get_action('powerview_update')(
@@ -70,7 +53,7 @@ class TestUpdatePowerView(TestBase):
         resource_id_list = [r1['id'], r2['id'], r3['id']]
 
         # powerview with resources
-        powerview_dict = self._make_powerview(sysadmin, resource_id_list)
+        powerview_dict = factories.PowerView(resources=resource_id_list)
         # Update dict with new title
         powerview_dict['title'] = "New Title"
 
@@ -94,7 +77,7 @@ class TestUpdatePowerView(TestBase):
         updated_resource_id_list = [r1['id'], r3['id'], r4['id']]
 
         # powerview with resources
-        powerview_dict = self._make_powerview(sysadmin, resource_id_list)
+        powerview_dict = factories.PowerView(resources=resource_id_list)
         # Update dict with new resource list
         powerview_dict['resources'] = updated_resource_id_list
 
