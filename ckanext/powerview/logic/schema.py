@@ -10,6 +10,7 @@ convert_to_json_if_string = toolkit.get_converter('convert_to_json_if_string')
 powerview_id_exists = toolkit.get_validator('powerview_id_exists')
 resource_ids_in_list = toolkit.get_validator('resource_ids_in_list')
 resource_id_exists = toolkit.get_validator('resource_id_exists')
+natural_number_validator = toolkit.get_validator('natural_number_validator')
 
 
 def powerview_base_schema():
@@ -73,5 +74,13 @@ def powerview_resource_association_delete_schema():
 def powerview_resource_list():
     schema = {
         'id': [not_empty, unicode, powerview_id_exists],
+    }
+    return schema
+
+
+def default_pagination_schema():
+    schema = {
+        'limit': [ignore_missing, natural_number_validator],
+        'offset': [ignore_missing, natural_number_validator]
     }
     return schema

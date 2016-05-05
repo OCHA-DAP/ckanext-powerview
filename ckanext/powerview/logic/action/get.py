@@ -1,7 +1,8 @@
 from ckan.logic import validate
 from ckan.plugins import toolkit
+from ckan.model import meta
 
-from ckanext.powerview.logic import schema
+from ckanext.powerview.logic import schema, auth
 from ckanext.powerview.model import PowerView, PowerviewResourceAssociation
 
 import logging
@@ -53,3 +54,38 @@ def powerview_resource_list(context, data_dict):
             resource_list.append(resource)
 
     return resource_list
+
+
+@toolkit.side_effect_free
+@validate(schema.default_pagination_schema)
+def powerview_list(context, data_dict):
+    '''List powerviews user is authorized to view.
+
+    :rtype: list of dictionaries
+    '''
+
+    toolkit.check_access('ckanext_powerview_list', context, data_dict)
+
+    powerviews = meta.Session.query(PowerView).all()
+
+    pv_dicts = []
+    for pv in powerviews:
+        try:
+            toolkit.check_access('ckanext_powerview_show', context,
+                                 {'id': pv.id})
+        except toolkit.NotAuthorized:
+            pass
+        else:
+            pv_dicts.append(pv.as_dict())
+    return pv_dicts
+
+
+# def powerview_list_for_user(context, data_dict):
+#     '''List powerviews created by user.
+
+#     :rtype: list of dictionaries
+#     '''
+
+#     toolkit.check_access('ckanext_powerview_list_for_user', context, data_dict)
+
+#     return []
