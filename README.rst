@@ -90,10 +90,10 @@ PowerView actions::
     curl -X POST http://127.0.0.1:5000/api/3/action/powerview_delete -H "Authorization:{YOUR-API-KEY}" -d '{"id": "my-powerview-id"}'
 
     - show a powerview
-    curl -X POST http://127.0.0.1:5000/api/3/action/powerview_show -d '{"id": "my-powerview-id"}'
+    curl http://127.0.0.1:5000/api/3/action/powerview_show -d '{"id": "my-powerview-id"}'
 
     - list resources in a powerview
-    curl -X POST http://127.0.0.1:5000/api/3/action/powerview_resource_list -d '{"id": "my-powerview-id"}'
+    curl http://127.0.0.1:5000/api/3/action/powerview_resource_list -d '{"id": "my-powerview-id"}'
 
     - add a resource to an existing powerview (sysadmins only)
     curl -X POST http://127.0.0.1:5000/api/3/action/powerview_add_resource -d '{"id": "my-powerview-id", "resource_id": "my-resource-id"}'
@@ -101,6 +101,8 @@ PowerView actions::
     - remove a resource to an existing powerview (sysadmins only)
     curl -X POST http://127.0.0.1:5000/api/3/action/powerview_remove_resource -d '{"id": "my-powerview-id", "resource_id": "my-resource-id"}'
 
+    - list powerviews user is authorized to view (public, unrestricted and authorized for user)
+    curl http://127.0.0.1:5000/api/3/action/powerview_list -H "Authorization:{YOUR-API-KEY}" -d ''
 
 
 -----------------
