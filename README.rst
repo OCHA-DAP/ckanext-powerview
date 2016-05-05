@@ -102,7 +102,7 @@ PowerView actions::
     curl -X POST http://127.0.0.1:5000/api/3/action/powerview_remove_resource -d '{"id": "my-powerview-id", "resource_id": "my-resource-id"}'
 
     - list powerviews user is authorized to view (public, unrestricted and authorized for user)
-    curl http://127.0.0.1:5000/api/3/action/powerview_list -H "Authorization:{YOUR-API-KEY}" -d ''
+    curl http://127.0.0.1:5000/api/3/action/powerview_list -H "Authorization:{YOUR-API-KEY}" -d '{"limit":<int>, "offset":<int>}'
 
 
 -----------------

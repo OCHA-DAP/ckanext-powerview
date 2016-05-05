@@ -191,3 +191,24 @@ class TestPowerViewList(TestBase):
         powerview_list = toolkit.get_action('powerview_list')(context,
                                                               data_dict={})
         nosetools.assert_equal(powerview_list, [])
+
+    def test_powerview_list_offset_and_limit(self):
+        '''
+        Calling powerview_list with an offset and limit returns expected
+        results.
+        '''
+        # make some powerviews
+        for i in xrange(0, 20):
+            factories.PowerView(title='powerview_{0}'.format(i + 1),
+                                private=False)
+
+        powerview_list = toolkit.get_action('powerview_list')(
+            data_dict={
+                'limit': 10,
+                'offset': 10
+            }
+        )
+        nosetools.assert_equal(len(powerview_list), 10)
+        pv_ids = [pv['title'] for pv in powerview_list]
+        for i in xrange(10, 20):
+            nosetools.assert_true('powerview_{0}'.format(i + 1) in pv_ids)

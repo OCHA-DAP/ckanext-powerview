@@ -66,7 +66,17 @@ def powerview_list(context, data_dict):
 
     toolkit.check_access('ckanext_powerview_list', context, data_dict)
 
-    powerviews = meta.Session.query(PowerView).all()
+    query = meta.Session.query(PowerView)
+
+    limit = data_dict.get('limit')
+    if limit:
+        query = query.limit(limit)
+
+    offset = data_dict.get('offset')
+    if offset:
+        query = query.offset(offset)
+
+    powerviews = query.all()
 
     pv_dicts = []
     for pv in powerviews:
