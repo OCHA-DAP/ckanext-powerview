@@ -41,8 +41,9 @@ class TestCreatePowerView(TestBase):
         nosetools.assert_equal(powerview_result['created_by'], sysadmin['id'])
 
     def test_powerview_create_private_defaults_to_false(self):
-        '''private will default to False when not specified.'''
-
+        '''
+        PowerViews are public by default, if private option isn't specified.
+        '''
         sysadmin = Sysadmin()
 
         create_dict = self._make_create_data_dict()

@@ -35,10 +35,6 @@ class PowerView(factory.Factory):
     description = 'My test powerview description.'
     view_type = 'my-view-type'
     config = '{"my": "json"}'
-    private = 'yes'
-
-    # # Generate a different group name param for each user that gets created.
-    # name = factory.Sequence(lambda n: 'test_dataset_{n}'.format(n=n))
 
     @classmethod
     def _build(cls, target_class, *args, **kwargs):
