@@ -32,7 +32,7 @@ class PowerviewPlugin(plugins.SingletonPlugin):
             'ckanext_powerview_resource_list':
                 ckanext.powerview.logic.auth.resource_list,
             'ckanext_powerview_list':
-                ckanext.powerview.logic.auth.powerview_list
+                ckanext.powerview.logic.auth.powerview_list,
         }
 
     # IActions

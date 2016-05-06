@@ -11,6 +11,8 @@ powerview_id_exists = toolkit.get_validator('powerview_id_exists')
 resource_ids_in_list = toolkit.get_validator('resource_ids_in_list')
 resource_id_exists = toolkit.get_validator('resource_id_exists')
 natural_number_validator = toolkit.get_validator('natural_number_validator')
+convert_user_name_or_id_to_id = \
+    toolkit.get_converter('convert_user_name_or_id_to_id')
 
 
 def powerview_base_schema():
@@ -78,9 +80,10 @@ def powerview_resource_list():
     return schema
 
 
-def default_pagination_schema():
+def powerview_list():
     schema = {
         'limit': [ignore_missing, natural_number_validator],
-        'offset': [ignore_missing, natural_number_validator]
+        'offset': [ignore_missing, natural_number_validator],
+        'id': [ignore_missing, unicode, convert_user_name_or_id_to_id]
     }
     return schema

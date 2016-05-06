@@ -2,7 +2,7 @@ from ckan.logic import validate
 from ckan.plugins import toolkit
 from ckan.model import meta
 
-from ckanext.powerview.logic import schema, auth
+from ckanext.powerview.logic import schema
 from ckanext.powerview.model import PowerView, PowerviewResourceAssociation
 
 import logging
@@ -57,9 +57,19 @@ def powerview_resource_list(context, data_dict):
 
 
 @toolkit.side_effect_free
-@validate(schema.default_pagination_schema)
+@validate(schema.powerview_list)
 def powerview_list(context, data_dict):
     '''List powerviews user is authorized to view.
+
+    :param limit: limits the number of powerviews to return (optional)
+    :type limit: int
+
+    :param offset: offsets the start of the returned list of powerviews
+        (optional)
+    :type offset: int
+
+    :param id: restrict results to user with this id (optional)
+    :type id: string
 
     :rtype: list of dictionaries
     '''
@@ -76,6 +86,10 @@ def powerview_list(context, data_dict):
     if offset:
         query = query.offset(offset)
 
+    user_id = data_dict.get('id')
+    if user_id:
+        query = query.filter_by(created_by=user_id)
+
     powerviews = query.all()
 
     pv_dicts = []
@@ -88,14 +102,3 @@ def powerview_list(context, data_dict):
         else:
             pv_dicts.append(pv.as_dict())
     return pv_dicts
-
-
-# def powerview_list_for_user(context, data_dict):
-#     '''List powerviews created by user.
-
-#     :rtype: list of dictionaries
-#     '''
-
-#     toolkit.check_access('ckanext_powerview_list_for_user', context, data_dict)
-
-#     return []

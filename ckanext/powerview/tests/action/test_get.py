@@ -212,3 +212,126 @@ class TestPowerViewList(TestBase):
         pv_ids = [pv['title'] for pv in powerview_list]
         for i in xrange(10, 20):
             nosetools.assert_true('powerview_{0}'.format(i + 1) in pv_ids)
+
+
+class TestPowerViewUserList(TestBase):
+
+    '''Tests for powerview_list action with user id provided.'''
+
+    def test_powerview_list_no_powerviews(self):
+        '''
+        Calling powerview_list with a user id, when site has no powerviews,
+        returns an empty list, and doesn't return ValidationError.
+        '''
+        user = User()
+        powerview_list = toolkit.get_action('powerview_list')(
+            data_dict={'id': user['id']})
+        nosetools.assert_equal(powerview_list, [])
+
+    def test_powerview_list_no_user(self):
+        '''
+        Calling powerview_list with non-valid username raises ValidationError.
+        '''
+        powerview_list_action = toolkit.get_action('powerview_list')
+        nosetools.assert_raises(toolkit.ValidationError,
+                                powerview_list_action,
+                                data_dict={'id': 'no-user-here'})
+
+    def test_powerview_list_with_name(self):
+        '''
+        Calling powerview_list with a valid username doesn't raise
+        ValidationError.
+        '''
+        user = User()
+        powerview_list = toolkit.get_action('powerview_list')(
+            data_dict={'id': user['name']})
+        nosetools.assert_equal(powerview_list, [])
+
+    def test_powerview_list_private_powerview(self):
+        '''
+        Calling powerview_list by a normal user only returns public and
+        authorized powerviews.
+        '''
+        user_one = User()
+        user_two = User()
+
+        p1 = factories.PowerView(user=user_one, private=False)
+        p2 = factories.PowerView(user=user_one, private=True)
+
+        context = {'user': user_two['name']}
+        powerview_list = toolkit.get_action('powerview_list')(
+            context=context,
+            data_dict={'id': user_one['name']})
+
+        nosetools.assert_equal(len(powerview_list), 1)
+        nosetools.assert_true(p1 in powerview_list)
+        nosetools.assert_true(p2 not in powerview_list)
+
+    def test_powerview_list_private_powerview_authorized(self):
+        '''
+        Calling powerview_list by a normal user returns public and private
+        powerviews if they are the creator.
+        '''
+        user_one = User()
+
+        p1 = factories.PowerView(user=user_one, private=False)
+        p2 = factories.PowerView(user=user_one, private=True)
+
+        context = {'user': user_one['name']}
+        powerview_list = toolkit.get_action('powerview_list')(
+            context=context,
+            data_dict={'id': user_one['name']})
+
+        nosetools.assert_equal(len(powerview_list), 2)
+        nosetools.assert_true(p1 in powerview_list)
+        nosetools.assert_true(p2 in powerview_list)
+
+    def test_powerview_list_public_powerview_restricted_resources(self):
+        '''
+        Calling powerview_list by a normal user only returns public and
+        authorized powerviews. Powerviews with private resources not returned.
+        '''
+        user_one = User()
+        user_two = User()
+
+        org = Organization(users=[{'name': user_one['name'],
+                                   'capacity': 'member'}])
+        dataset = Dataset(owner_org=org['id'], private="true")
+        r1 = Resource(package_id=dataset['id'])
+        r2 = Resource(package_id=dataset['id'])
+
+        # p1 is public, but has private resources
+        p1 = factories.PowerView(user=user_one, private=False,
+                                 resources=[r1['id'], r2['id']])
+        p2 = factories.PowerView(user=user_one, private=False)
+
+        context = {'user': user_two['name']}
+        powerview_list = toolkit.get_action('powerview_list')(
+            context=context,
+            data_dict={'id': user_one['name']})
+
+        nosetools.assert_equal(len(powerview_list), 1)
+        nosetools.assert_true(p1 not in powerview_list)
+        nosetools.assert_true(p2 in powerview_list)
+
+    def test_powerview_list_user_powerviews(self):
+        '''
+        Calling powerview_list only returns powerviews for the passed user id.
+        '''
+        user_one = User()
+        user_two = User()
+        user_three = User()
+
+        p1 = factories.PowerView(user=user_one, private=False)
+        p2 = factories.PowerView(user=user_two, private=False)
+        p3 = factories.PowerView(user=user_two, private=False)
+
+        context = {'user': user_three['name']}
+        powerview_list = toolkit.get_action('powerview_list')(
+            context=context,
+            data_dict={'id': user_two['name']})
+
+        nosetools.assert_equal(len(powerview_list), 2)
+        nosetools.assert_true(p1 not in powerview_list)
+        nosetools.assert_true(p2 in powerview_list)
+        nosetools.assert_true(p3 in powerview_list)

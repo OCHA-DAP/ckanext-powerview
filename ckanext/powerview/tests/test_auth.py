@@ -368,7 +368,6 @@ class TestPowerViewListAuth(TestBase):
         NotAuthorized.
         '''
         a_user = factories.User()
-        # powerview = powerview_factories.PowerView(private='no')
 
         context = {'user': a_user['name'], 'model': None}
         nosetools.assert_true(
