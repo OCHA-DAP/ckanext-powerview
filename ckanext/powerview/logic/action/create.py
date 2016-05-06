@@ -71,7 +71,7 @@ def powerview_add_resource(context, data_dict):
     :type resource_id: string
     '''
 
-    toolkit.check_access('ckanext_powerview_create', context, data_dict)
+    toolkit.check_access('ckanext_powerview_update', context, data_dict)
 
     powerview_id = data_dict['id']
     resource_id = data_dict['resource_id']
