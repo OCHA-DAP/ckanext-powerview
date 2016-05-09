@@ -1,5 +1,6 @@
-import ckan.plugins.toolkit as toolkit
+import pylons.config as config
 
+import ckan.plugins.toolkit as toolkit
 import ckan.model as model
 
 from ckantoolkit import _, NotAuthorized
@@ -10,25 +11,86 @@ from ckanext.powerview.model import PowerView
 def create(context, data_dict):
     '''Create a PowerView.
 
-       Only sysadmins can create a PowerView.
+       By default, only sysadmins can create a PowerView. But the setting
+       `ckanext.powerview.allow_user_create` allows any logged in user to
+       create powerviews.
     '''
-    return {'success': False}
 
+    allow_user_create = toolkit.asbool(
+        config.get('ckanext.powerview.allow_user_create', False))
 
-def delete(context, data_dict):
-    '''Delete a PowerView.
+    if not allow_user_create:
+        return {'success': False}
 
-       Only sysadmins can delete a PowerView.
-    '''
-    return {'success': False}
+    user = context.get('user')
+
+    # Check resources
+    for res_id in data_dict.get('resources', []):
+        try:
+            toolkit.check_access('resource_show', context,
+                                 data_dict={'id': res_id})
+        except NotAuthorized:
+            return {
+                'success': False,
+                'msg': _('User {0} not authorized to read resource {1}'
+                         .format(user, res_id))
+            }
+
+    return {'success': True}
 
 
 def update(context, data_dict):
     '''Update a PowerView.
 
-       Only sysadmins can update a PowerView.
+       By default, only sysadmins can update PowerViews. But the setting
+       `ckanext.powerview.allow_user_create` allows any logged in user to
+       update powerviews they own.
     '''
-    return {'success': False}
+    if not toolkit.asbool(config.get('ckanext.powerview.allow_user_create',
+                                     False)):
+        return {'success': False}
+    else:
+        user = context.get('user')
+        user_obj = model.User.get(user)
+        powerview = PowerView.get(id=data_dict['id'])
+
+        # Check resources
+        for res_id in data_dict.get('resources', []):
+            try:
+                toolkit.check_access('resource_show', context,
+                                     data_dict={'id': res_id})
+            except NotAuthorized:
+                return {
+                    'success': False,
+                    'msg': _('User {0} not authorized to read resource {1}'
+                             .format(user, res_id))
+                }
+
+        if powerview and user and powerview.created_by == user_obj.id:
+            return {'success': True}
+
+        return {'success': False}
+
+
+def delete(context, data_dict):
+    '''Delete a PowerView.
+
+      By default, only sysadmins can delete PowerViews. But the setting
+      `ckanext.powerview.allow_user_create` allows any logged in user to
+      delete powerviews they own.
+    '''
+    if not toolkit.asbool(config.get('ckanext.powerview.allow_user_create',
+                                     False)):
+        return {'success': False}
+    else:
+        user = context.get('user')
+        user_obj = model.User.get(user)
+        powerview = PowerView.get(id=data_dict['id'])
+
+        if powerview and user and powerview.created_by == user_obj.id:
+            return {'success': True}
+
+        return {'success': False}
 
 
 @toolkit.auth_allow_anonymous_access

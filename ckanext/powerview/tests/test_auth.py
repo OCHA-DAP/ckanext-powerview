@@ -11,14 +11,27 @@ from ckanext.powerview.tests import factories as powerview_factories
 
 class TestPowerViewCreateAuth(TestBase):
 
+    def _make_create_data_dict(self, resources=None):
+        data_dict = {
+            'title': 'Title',
+            'description': 'My short description.',
+            'view_type': 'my-view-type',
+            'config': '{"my":"json"}',
+            'private': 'yes'
+        }
+        if resources:
+            data_dict['resources'] = resources
+        return data_dict
+
     def test_powerview_create_sysadmin(self):
         '''
         Calling powerview create with a sysadmin doesn't raise NotAuthorized.
         '''
         a_sysadmin = factories.Sysadmin()
-        context = {'user': a_sysadmin['name'], 'model': None}
+        pv_dict = self._make_create_data_dict()
+        context = {'user': a_sysadmin['name'], 'model': model}
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_create',
-                                                context=context))
+                                                context=context, **pv_dict))
 
     def test_powerview_create_normal_user(self):
         '''
@@ -26,17 +39,82 @@ class TestPowerViewCreateAuth(TestBase):
         NotAuthorized.
         '''
         a_user = factories.User()
-        context = {'user': a_user['name'], 'model': None}
+        pv_dict = self._make_create_data_dict()
+        context = {'user': a_user['name'], 'model': model}
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
-                                'ckanext_powerview_create', context=context)
+                                'ckanext_powerview_create',
+                                context=context, **pv_dict)
 
     def test_powerview_create_anon_user(self):
         '''
         Calling powerview create with anon user raises NotAuthorized.
         '''
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
+        pv_dict = self._make_create_data_dict()
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
-                                'ckanext_powerview_create', context=context)
+                                'ckanext_powerview_create',
+                                context=context, **pv_dict)
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_create_normal_user_allow_create(self):
+        '''
+        Calling powerview create with normal user when allow_user_create is
+        true, doesn't raise NotAuthorized.
+        '''
+        a_user = factories.User()
+        pv_dict = self._make_create_data_dict()
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(helpers.call_auth('ckanext_powerview_create',
+                                                context=context, **pv_dict))
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_create_anon_user_allow_create(self):
+        '''
+        Calling powerview create with anon user when allow_user_create is
+        true, still raises NotAuthorized.
+        '''
+        context = {'user': '', 'model': model}
+        pv_dict = self._make_create_data_dict()
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_create', context=context,
+                                **pv_dict)
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_create_normal_user_allow_create_private_resources(self):
+        '''
+        Calling powerview create with normal user when allow_user_create is
+        true, with unauthorized resources, raises NotAuthorized.
+        '''
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'], private="true")
+        r1 = factories.Resource(package_id=dataset['id'])
+        r2 = factories.Resource(package_id=dataset['id'])
+
+        a_user = factories.User()
+
+        pv_dict = self._make_create_data_dict(resources=[r1['id'], r2['id']])
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_create', context=context,
+                                **pv_dict)
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_create_normal_user_allow_create_authed_resources(self):
+        '''
+        Calling powerview create with normal user when allow_user_create is
+        true, with authorized private resources doesn't raise NotAuthorized.
+        '''
+        a_user = factories.User()
+        org = factories.Organization(users=[{
+            'name': a_user['name'], 'capacity': 'member'}])
+        dataset = factories.Dataset(owner_org=org['id'], private="true")
+        r1 = factories.Resource(package_id=dataset['id'])
+        r2 = factories.Resource(package_id=dataset['id'])
+
+        pv_dict = self._make_create_data_dict(resources=[r1['id'], r2['id']])
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(helpers.call_auth('ckanext_powerview_create',
+                              context=context, **pv_dict))
 
 
 class TestPowerViewDeleteAuth(TestBase):
@@ -46,9 +124,10 @@ class TestPowerViewDeleteAuth(TestBase):
         Calling powerview delete with a sysadmin doesn't raise NotAuthorized.
         '''
         a_sysadmin = factories.Sysadmin()
-        context = {'user': a_sysadmin['name'], 'model': None}
+        pv = powerview_factories.PowerView()
+        context = {'user': a_sysadmin['name'], 'model': model}
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_delete',
-                                                context=context))
+                                                context=context, id=pv['id']))
 
     def test_powerview_delete_normal_user(self):
         '''
@@ -56,17 +135,60 @@ class TestPowerViewDeleteAuth(TestBase):
         NotAuthorized.
         '''
         a_user = factories.User()
-        context = {'user': a_user['name'], 'model': None}
+        pv = powerview_factories.PowerView()
+        context = {'user': a_user['name'], 'model': model}
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
-                                'ckanext_powerview_delete', context=context)
+                                'ckanext_powerview_delete', context=context,
+                                id=pv['id'])
 
     def test_powerview_delete_anon_user(self):
         '''
         Calling powerview delete with anon user raises NotAuthorized.
         '''
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
+        pv = powerview_factories.PowerView()
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
-                                'ckanext_powerview_delete', context=context)
+                                'ckanext_powerview_delete', context=context,
+                                id=pv['id'])
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_delete_normal_user_allow_create_owned(self):
+        '''
+        Calling powerview delete with normal user when allow_user_create is
+        true, doesn't raise NotAuthorized for powerviews they own.
+        '''
+        a_user = factories.User()
+        pv = powerview_factories.PowerView(user=a_user)
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(helpers.call_auth('ckanext_powerview_delete',
+                                                context=context,
+                                                id=pv['id']))
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_delete_normal_user_allow_create_unowned(self):
+        '''
+        Calling powerview delete with normal user when allow_user_create is
+        true, raises NotAuthorized for powerviews they don't own.
+        '''
+        a_user = factories.User()
+        pv = powerview_factories.PowerView()
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_delete', context=context,
+                                id=pv['id'])
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_delete_anon_user_allow_create(self):
+        '''
+        Calling powerview delete with anon user when allow_user_create is
+        true, still raises NotAuthorized.
+        '''
+        context = {'user': '', 'model': model}
+        pv = powerview_factories.PowerView()
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_delete',
+                                context=context,
+                                id=pv['id'])
 
 
 class TestPowerViewUpdateAuth(TestBase):
@@ -76,9 +198,10 @@ class TestPowerViewUpdateAuth(TestBase):
         Calling powerview update with a sysadmin doesn't raise NotAuthorized.
         '''
         a_sysadmin = factories.Sysadmin()
-        context = {'user': a_sysadmin['name'], 'model': None}
+        pv = powerview_factories.PowerView(private=False)
+        context = {'user': a_sysadmin['name'], 'model': model}
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_update',
-                                                context=context))
+                                                context=context, **pv))
 
     def test_powerview_update_normal_user(self):
         '''
@@ -86,17 +209,99 @@ class TestPowerViewUpdateAuth(TestBase):
         NotAuthorized.
         '''
         a_user = factories.User()
-        context = {'user': a_user['name'], 'model': None}
+        context = {'user': a_user['name'], 'model': model}
+        pv = powerview_factories.PowerView(private=False)
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
-                                'ckanext_powerview_update', context=context)
+                                'ckanext_powerview_update', context=context,
+                                **pv)
 
     def test_powerview_update_anon_user(self):
         '''
         Calling powerview update with anon user raises NotAuthorized.
         '''
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
+        pv = powerview_factories.PowerView(private=False)
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
-                                'ckanext_powerview_update', context=context)
+                                'ckanext_powerview_update', context=context,
+                                **pv)
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_update_normal_user_allow_create_owed(self):
+        '''
+        Calling powerview update with normal user when allow_user_create is
+        true, doesn't raise NotAuthorized for owned powerview.
+        '''
+        a_user = factories.User()
+        pv = powerview_factories.PowerView(user=a_user)
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(helpers.call_auth('ckanext_powerview_update',
+                                                context=context,
+                                                **pv))
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_update_normal_user_allow_create_unowed(self):
+        '''
+        Calling powerview update with normal user when allow_user_create is
+        true, raises NotAuthorized for unowned powerview.
+        '''
+        a_user = factories.User()
+        pv = powerview_factories.PowerView()
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_update', context=context,
+                                **pv)
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_update_anon_user_allow_create(self):
+        '''
+        Calling powerview update with anon user when allow_user_create is
+        true, still raises NotAuthorized.
+        '''
+        context = {'user': '', 'model': model}
+        pv = powerview_factories.PowerView(private=False)
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_update', context=context,
+                                **pv)
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_update_normal_user_allow_create_add_private_resources(self):
+        '''
+        Calling powerview update with normal user when allow_user_create is
+        true, with unauthorized private resources, raises NotAuthorized.
+        '''
+        a_user = factories.User()
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'], private="true")
+        r1 = factories.Resource(package_id=dataset['id'])
+        r2 = factories.Resource(package_id=dataset['id'])
+
+        pv = powerview_factories.PowerView(user=a_user, private=False)
+        pv['resources'] = [r1['id'], r2['id']]
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_update', context=context,
+                                **pv)
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_update_normal_user_allow_create_add_authed_resources(self):
+        '''
+        Calling powerview update with normal user when allow_user_create is
+        true, with authorized private resources doesn't raise NotAuthorized.
+        '''
+        a_user = factories.User()
+        org = factories.Organization(users=[{'name': a_user['name'],
+                                             'capacity': 'member'}])
+        dataset = factories.Dataset(owner_org=org['id'], private="true")
+        r1 = factories.Resource(package_id=dataset['id'])
+        r2 = factories.Resource(package_id=dataset['id'])
+
+        pv = powerview_factories.PowerView(user=a_user, private=False)
+        pv['resources'] = [r1['id'], r2['id']]
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(helpers.call_auth('ckanext_powerview_update',
+                                                context=context, **pv))
 
 
 class TestPowerViewShowAuth(TestBase):
@@ -106,11 +311,11 @@ class TestPowerViewShowAuth(TestBase):
         Calling powerview show with a sysadmin doesn't raise NotAuthorized.
         '''
         a_sysadmin = factories.Sysadmin()
-        context = {'user': a_sysadmin['name'], 'model': None}
+        context = {'user': a_sysadmin['name'], 'model': model}
         powerview = powerview_factories.PowerView()
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_show',
                                                 context=context,
-                                                data_dict=powerview))
+                                                id=powerview['id']))
 
     def test_powerview_show_normal_user(self):
         '''
@@ -120,7 +325,7 @@ class TestPowerViewShowAuth(TestBase):
         a_user = factories.User()
         powerview = powerview_factories.PowerView(private='no')
 
-        context = {'user': a_user['name'], 'model': None}
+        context = {'user': a_user['name'], 'model': model}
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_show',
                                                 context=context,
                                                 id=powerview['id']))
@@ -132,7 +337,7 @@ class TestPowerViewShowAuth(TestBase):
         '''
         powerview = powerview_factories.PowerView(private='no')
 
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_show',
                                                 context=context,
                                                 id=powerview['id']))
@@ -145,7 +350,7 @@ class TestPowerViewShowAuth(TestBase):
         a_user = factories.User()
         powerview = powerview_factories.PowerView(private='yes')
 
-        context = {'user': a_user['name'], 'model': None}
+        context = {'user': a_user['name'], 'model': model}
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
                                 'ckanext_powerview_show',
                                 context=context, id=powerview['id'])
@@ -157,7 +362,7 @@ class TestPowerViewShowAuth(TestBase):
         '''
         powerview = powerview_factories.PowerView(private='yes')
 
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
                                 'ckanext_powerview_show',
                                 context=context, id=powerview['id'])
@@ -167,7 +372,7 @@ class TestPowerViewShowAuth(TestBase):
         Calling powerview show with a nonexisting powerview id should raise
         NotAuthorized.
         '''
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
                                 'ckanext_powerview_show',
                                 context=context, id='id-not-here')
@@ -182,7 +387,7 @@ class TestPowerViewShowAuth(TestBase):
         powerview = powerview_factories.PowerView(user=a_user, private='yes',
                                                   ignore_auth=True)
 
-        context = {'user': a_user['name'], 'model': None}
+        context = {'user': a_user['name'], 'model': model}
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_show',
                                                 context=context,
                                                 id=powerview['id']))
@@ -198,7 +403,7 @@ class TestPowerViewShowAuth(TestBase):
         powerview = powerview_factories.PowerView(user=a_user, private='yes',
                                                   ignore_auth=True)
 
-        context = {'user': a_sysadmin['name'], 'model': None}
+        context = {'user': a_sysadmin['name'], 'model': model}
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_show',
                                                 context=context,
                                                 id=powerview['id']))
@@ -212,10 +417,11 @@ class TestPowerViewResourceListAuth(TestBase):
         NotAuthorized.
         '''
         a_sysadmin = factories.Sysadmin()
-        context = {'user': a_sysadmin['name'], 'model': None}
+        powerview = powerview_factories.PowerView(private='no')
+        context = {'user': a_sysadmin['name'], 'model': model}
         nosetools.assert_true(
             helpers.call_auth('ckanext_powerview_resource_list',
-                              context=context))
+                              context=context, id=powerview['id']))
 
     def test_powerview_resource_list_normal_user(self):
         '''
@@ -225,7 +431,7 @@ class TestPowerViewResourceListAuth(TestBase):
         a_user = factories.User()
         powerview = powerview_factories.PowerView(private='no')
 
-        context = {'user': a_user['name'], 'model': None}
+        context = {'user': a_user['name'], 'model': model}
         nosetools.assert_true(
             helpers.call_auth('ckanext_powerview_resource_list',
                               context=context,
@@ -237,7 +443,7 @@ class TestPowerViewResourceListAuth(TestBase):
         NotAuthorized.
         '''
         powerview = powerview_factories.PowerView(private='no')
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
         nosetools.assert_true(
             helpers.call_auth('ckanext_powerview_resource_list',
                               context=context,
@@ -316,7 +522,7 @@ class TestPowerViewResourceListAuth(TestBase):
         a_sysadmin = factories.Sysadmin()
         powerview = powerview_factories.PowerView(private='yes')
 
-        context = {'user': a_sysadmin['name'], 'model': None}
+        context = {'user': a_sysadmin['name'], 'model': model}
         nosetools.assert_true(
             helpers.call_auth('ckanext_powerview_resource_list',
                               context=context,
@@ -330,7 +536,7 @@ class TestPowerViewResourceListAuth(TestBase):
         a_user = factories.User()
         powerview = powerview_factories.PowerView(private='yes')
 
-        context = {'user': a_user['name'], 'model': None}
+        context = {'user': a_user['name'], 'model': model}
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
                                 'ckanext_powerview_resource_list',
                                 context=context,
@@ -343,7 +549,7 @@ class TestPowerViewResourceListAuth(TestBase):
         '''
         powerview = powerview_factories.PowerView(private='yes')
 
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
         nosetools.assert_raises(NotAuthorized, helpers.call_auth,
                                 'ckanext_powerview_resource_list',
                                 context=context,
@@ -357,7 +563,7 @@ class TestPowerViewListAuth(TestBase):
         Calling powerview list with a sysadmin doesn't raise NotAuthorized.
         '''
         a_sysadmin = factories.Sysadmin()
-        context = {'user': a_sysadmin['name'], 'model': None}
+        context = {'user': a_sysadmin['name'], 'model': model}
         nosetools.assert_true(
             helpers.call_auth('ckanext_powerview_list',
                               context=context))
@@ -369,7 +575,7 @@ class TestPowerViewListAuth(TestBase):
         '''
         a_user = factories.User()
 
-        context = {'user': a_user['name'], 'model': None}
+        context = {'user': a_user['name'], 'model': model}
         nosetools.assert_true(
             helpers.call_auth('ckanext_powerview_list',
                               context=context))
@@ -378,7 +584,7 @@ class TestPowerViewListAuth(TestBase):
         '''
         Calling powerview list with anon user doesn't raise NotAuthorized.
         '''
-        context = {'user': '', 'model': None}
+        context = {'user': '', 'model': model}
         nosetools.assert_true(
             helpers.call_auth('ckanext_powerview_list',
                               context=context))

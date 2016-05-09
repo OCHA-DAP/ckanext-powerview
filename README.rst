@@ -72,6 +72,17 @@ do::
     pip install -r dev-requirements.txt
 
 
+----------------------
+Configuration Settings
+----------------------
+
+Optional configuration settings::
+
+    # If True, all logged in users will be able to create, delete and update
+    # their own Powerviews. Default is ``False``.
+
+    ckanext.powerview.allow_user_create = true
+
 ---
 API
 ---
