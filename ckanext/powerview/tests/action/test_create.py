@@ -5,7 +5,7 @@ import ckan.plugins.toolkit as toolkit
 from ckantoolkit.tests.factories import Sysadmin, Resource
 from ckantoolkit import ValidationError
 
-from ckanext.powerview.tests import TestBase
+from ckanext.powerview.tests import TestBase, factories
 from ckanext.powerview.model import PowerviewResourceAssociation
 
 
@@ -95,30 +95,14 @@ class TestCreatePowerView(TestBase):
 
 class TestPowerviewAddResource(TestBase):
 
-    def _make_powerview(self, user, resources=None):
-        '''Make a powerview and return the resulting data_dict.'''
-        data_dict = {
-            'title': 'Title',
-            'description': 'My short description.',
-            'view_type': 'my-view-type',
-            'config': '{"my":"json"}',
-            'private': 'yes'
-        }
-        if resources:
-            data_dict['resources'] = resources
-
-        return toolkit.get_action('powerview_create')(
-            context={'user': user['name']},
-            data_dict=data_dict
-        )
-
     def test_powerview_add_resource_valid(self):
         '''Adding a resource to powerview changes the resource list returned
         for the powerview.'''
         sysadmin = Sysadmin()
         r1 = Resource()
 
-        create_dict = self._make_powerview(sysadmin)
+        create_dict = factories.PowerView()
+
         nosetools.assert_equal(create_dict['resources'], [])
         nosetools.assert_equal(PowerviewResourceAssociation.count(), 0)
 
@@ -146,7 +130,7 @@ class TestPowerviewAddResource(TestBase):
         r2 = Resource()
         r3 = Resource()
 
-        create_dict = self._make_powerview(sysadmin, [r1['id'], r2['id']])
+        create_dict = factories.PowerView(resources=[r1['id'], r2['id']])
         nosetools.assert_equal(set(create_dict['resources']),
                                set([r1['id'], r2['id']]))
         nosetools.assert_equal(PowerviewResourceAssociation.count(), 2)
@@ -174,7 +158,7 @@ class TestPowerviewAddResource(TestBase):
         sysadmin = Sysadmin()
         r1 = Resource()
 
-        create_dict = self._make_powerview(sysadmin)
+        create_dict = factories.PowerView()
         nosetools.assert_equal(create_dict['resources'], [])
 
         toolkit.get_action('powerview_add_resource')(
