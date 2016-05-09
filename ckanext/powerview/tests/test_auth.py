@@ -540,25 +540,6 @@ class TestPowerViewAddResource(TestBase):
                                 powerview_id=powerview['id'],
                                 resource_id=r1['id'])
 
-    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
-    def test_powerview_add_resource_normal_user_allow_create(self):
-        '''
-        Calling powerview add resource for a normal user does not raise
-        NotAuthorized for an owned powerview and resource
-        '''
-        a_user = factories.User()
-        dataset = factories.Dataset()
-        r1 = factories.Resource(package_id=dataset['id'])
-
-        powerview = powerview_factories.PowerView(user=a_user)
-
-        context = {'user': a_user['name'], 'model': model}
-        nosetools.assert_true(
-            helpers.call_auth('ckanext_powerview_add_resource',
-                              context=context,
-                              powerview_id=powerview['id'],
-                              resource_id=r1['id']))
-
 
 class TestPowerViewRemoveResource(TestBase):
 
@@ -697,26 +678,6 @@ class TestPowerViewRemoveResource(TestBase):
                                 context=context,
                                 powerview_id=powerview['id'],
                                 resource_id=r1['id'])
-
-    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
-    def test_powerview_remove_resource_normal_user_allow_create(self):
-        '''
-        Calling powerview remove resource for a normal user does not raise
-        NotAuthorized for an owned powerview and resource
-        '''
-        a_user = factories.User()
-        dataset = factories.Dataset()
-        r1 = factories.Resource(package_id=dataset['id'])
-
-        powerview = powerview_factories.PowerView(user=a_user,
-                                                  resources=[r1['id']])
-
-        context = {'user': a_user['name'], 'model': model}
-        nosetools.assert_true(
-            helpers.call_auth('ckanext_powerview_remove_resource',
-                              context=context,
-                              powerview_id=powerview['id'],
-                              resource_id=r1['id']))
 
 
 class TestPowerViewResourceListAuth(TestBase):
