@@ -395,7 +395,7 @@ class TestPowerViewShowAuth(TestBase):
     def test_powerview_show_private_created_by_not_sysadmin_auth_by_syadmin(self):
         '''
         Calling powerview show for a private powerview, that's not been
-        created by a sysadmin, should still allow a sysadnin to view it.'''
+        created by a sysadmin, should still allow a sysadmin to view it.'''
         a_user = factories.User()
         a_sysadmin = factories.Sysadmin()
         # making a private powerview without the usual auth, so a non-sysadmin
@@ -407,6 +407,316 @@ class TestPowerViewShowAuth(TestBase):
         nosetools.assert_true(helpers.call_auth('ckanext_powerview_show',
                                                 context=context,
                                                 id=powerview['id']))
+
+
+class TestPowerViewAddResource(TestBase):
+
+    def test_powerview_add_resource_sysadmin(self):
+        '''
+        Calling powerview add resource for a sysadmin does not raise
+        NotAuthorized.
+        '''
+        a_sysadmin = factories.Sysadmin()
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView()
+
+        context = {'user': a_sysadmin['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_add_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
+
+    def test_powerview_add_resource_normal_user(self):
+        '''
+        Calling powerview add resource for a normal user raises NotAuthorized.
+        '''
+        a_user = factories.User()
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user)
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_add_resource',
+                                context=context,
+                                powerview_id=powerview['id'],
+                                resource_id=r1['id'])
+
+    def test_powerview_add_resource_anon_user(self):
+        '''
+        Calling powerview add resource for an anon user raises NotAuthorized.
+        '''
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView()
+
+        context = {'user': '', 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_add_resource',
+                                context=context,
+                                powerview_id=powerview['id'],
+                                resource_id=r1['id'])
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_add_resource_normal_user_allow_create(self):
+        '''
+        Calling powerview add resource for a normal user does not raise
+        NotAuthorized for an owned powerview and resource
+        '''
+        a_user = factories.User()
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user)
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_add_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_add_resource_normal_user_allow_create_private_resource(self):
+        '''
+        Calling powerview add resource for a normal user raises NotAuthorized
+        for an owned powerview but private unauthorized resource.
+        '''
+        a_user = factories.User()
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'], private="true")
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user)
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_add_resource',
+                                context=context,
+                                powerview_id=powerview['id'],
+                                resource_id=r1['id'])
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_add_resource_normal_user_allow_create_authed_resource(self):
+        '''
+        Calling powerview add resource for a normal user doesn't raise
+        NotAuthorized for an owned powerview and private authorized resource.
+        '''
+        a_user = factories.User()
+        org = factories.Organization(users=[{'name': a_user['name'],
+                                             'capacity': 'member'}])
+        dataset = factories.Dataset(owner_org=org['id'], private="true")
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user)
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_add_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_add_resource_anon_user_allow_create(self):
+        '''
+        Calling powerview add resource for an anon user still raises
+        NotAuthorized.
+        '''
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView()
+
+        context = {'user': '', 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_add_resource',
+                                context=context,
+                                powerview_id=powerview['id'],
+                                resource_id=r1['id'])
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_add_resource_normal_user_allow_create(self):
+        '''
+        Calling powerview add resource for a normal user does not raise
+        NotAuthorized for an owned powerview and resource
+        '''
+        a_user = factories.User()
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user)
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_add_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
+
+
+class TestPowerViewRemoveResource(TestBase):
+
+    def test_powerview_remove_resource_sysadmin(self):
+        '''
+        Calling powerview remove resource for a sysadmin does not raise
+        NotAuthorized.
+        '''
+        a_sysadmin = factories.Sysadmin()
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(resources=[r1['id']])
+
+        context = {'user': a_sysadmin['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_remove_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
+
+    def test_powerview_remove_resource_normal_user(self):
+        '''
+        Calling powerview remove resource for a normal user raises
+        NotAuthorized.
+        '''
+        a_user = factories.User()
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user,
+                                                  resources=[r1['id']])
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_remove_resource',
+                                context=context,
+                                powerview_id=powerview['id'],
+                                resource_id=r1['id'])
+
+    def test_powerview_remove_resource_anon_user(self):
+        '''
+        Calling powerview remove resource for an anon user raises
+        NotAuthorized.
+        '''
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(resources=[r1['id']])
+
+        context = {'user': '', 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_remove_resource',
+                                context=context,
+                                powerview_id=powerview['id'],
+                                resource_id=r1['id'])
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_remove_resource_normal_user_allow_create(self):
+        '''
+        Calling powerview remove resource for a normal user does not raise
+        NotAuthorized for an owned powerview and resource
+        '''
+        a_user = factories.User()
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user,
+                                                  resources=[r1['id']])
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_remove_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_remove_resource_normal_user_allow_create_private_resource(self):
+        '''
+        Calling powerview remove resource for a normal user doesn't raise
+        NotAuthorized for an owned powerview but private unauthorized
+        resource.
+        '''
+        a_user = factories.User()
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'], private="true")
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user,
+                                                  resources=[r1['id']])
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_remove_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_remove_resource_normal_user_allow_create_authed_resource(self):
+        '''
+        Calling powerview remove resource for a normal user doesn't raise
+        NotAuthorized for an owned powerview and private authorized resource.
+        '''
+        a_user = factories.User()
+        org = factories.Organization(users=[{'name': a_user['name'],
+                                             'capacity': 'member'}])
+        dataset = factories.Dataset(owner_org=org['id'], private="true")
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user,
+                                                  resources=[r1['id']])
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_remove_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_remove_resource_anon_user_allow_create(self):
+        '''
+        Calling powerview remove resource for an anon user still raises
+        NotAuthorized.
+        '''
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(resources=[r1['id']])
+
+        context = {'user': '', 'model': model}
+        nosetools.assert_raises(NotAuthorized, helpers.call_auth,
+                                'ckanext_powerview_remove_resource',
+                                context=context,
+                                powerview_id=powerview['id'],
+                                resource_id=r1['id'])
+
+    @helpers.change_config('ckanext.powerview.allow_user_create', 'true')
+    def test_powerview_remove_resource_normal_user_allow_create(self):
+        '''
+        Calling powerview remove resource for a normal user does not raise
+        NotAuthorized for an owned powerview and resource
+        '''
+        a_user = factories.User()
+        dataset = factories.Dataset()
+        r1 = factories.Resource(package_id=dataset['id'])
+
+        powerview = powerview_factories.PowerView(user=a_user,
+                                                  resources=[r1['id']])
+
+        context = {'user': a_user['name'], 'model': model}
+        nosetools.assert_true(
+            helpers.call_auth('ckanext_powerview_remove_resource',
+                              context=context,
+                              powerview_id=powerview['id'],
+                              resource_id=r1['id']))
 
 
 class TestPowerViewResourceListAuth(TestBase):

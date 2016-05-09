@@ -33,6 +33,10 @@ class PowerviewPlugin(plugins.SingletonPlugin):
                 ckanext.powerview.logic.auth.resource_list,
             'ckanext_powerview_list':
                 ckanext.powerview.logic.auth.powerview_list,
+            'ckanext_powerview_add_resource':
+                ckanext.powerview.logic.auth.add_resource,
+            'ckanext_powerview_remove_resource':
+                ckanext.powerview.logic.auth.remove_resource
         }
 
     # IActions

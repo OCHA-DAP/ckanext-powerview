@@ -142,6 +142,59 @@ def show(context, data_dict):
     return {'success': False}
 
 
+def add_resource(context, data_dict):
+    '''Create an association between a powerview and a resource.
+
+    By default, only sysadmins can update PowerViews. But the setting
+    `ckanext.powerview.allow_user_create` allows any logged in user to update
+    powerviews they own.
+    '''
+    if not toolkit.asbool(config.get('ckanext.powerview.allow_user_create',
+                                     False)):
+        return {'success': False}
+    else:
+        user = context.get('user')
+        user_obj = model.User.get(user)
+        powerview = PowerView.get(id=data_dict['powerview_id'])
+        resource_id = data_dict['resource_id']
+        # Check resource
+        try:
+            toolkit.check_access('resource_show', context,
+                                 data_dict={'id': resource_id})
+        except NotAuthorized:
+            return {
+                'success': False,
+                'msg': _('User {0} not authorized to read resource {1}'
+                         .format(user, resource_id))
+            }
+
+        if powerview and user and powerview.created_by == user_obj.id:
+            return {'success': True}
+
+        return {'success': False}
+
+
+def remove_resource(context, data_dict):
+    '''Create an association between a powerview and a resource.
+
+    By default, only sysadmins can update PowerViews. But the setting
+    `ckanext.powerview.allow_user_create` allows any logged in user to update
+    powerviews they own.
+    '''
+    if not toolkit.asbool(config.get('ckanext.powerview.allow_user_create',
+                                     False)):
+        return {'success': False}
+    else:
+        user = context.get('user')
+        user_obj = model.User.get(user)
+        powerview = PowerView.get(id=data_dict['powerview_id'])
+
+        if powerview and user and powerview.created_by == user_obj.id:
+            return {'success': True}
+
+        return {'success': False}
+
+
 @toolkit.auth_allow_anonymous_access
 def resource_list(context, data_dict):
     '''List resources in a powerview.
